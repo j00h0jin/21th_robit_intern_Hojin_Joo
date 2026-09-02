@@ -1,4 +1,4 @@
-#include "include/hw1.hpp"
+#include "../include/hw1.hpp"
 
 void hw1::makeArr()
 {

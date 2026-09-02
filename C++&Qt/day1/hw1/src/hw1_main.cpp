@@ -8,7 +8,7 @@
 max min sum avg 구하기
 */
 
-#include "include/hw1.hpp"
+#include "../include/hw1.hpp"
 #include <iostream>
 
 using namespace std;
