@@ -1,0 +1,4 @@
+#ifndef COMPAREWINDOW_H
+#define COMPAREWINDOW_H
+
+#endif // COMPAREWINDOW_H

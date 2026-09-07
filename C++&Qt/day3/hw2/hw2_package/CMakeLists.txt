@@ -25,6 +25,9 @@ add_executable(${PROJECT_NAME}
     src/mainwindow.cpp
     include/mainwindow.h
     ui/mainwindow.ui
+    src/resultwindow.cpp
+    include/resultwindow.h
+    ui/resultwindow.ui
 )
 
 target_include_directories(${PROJECT_NAME}
