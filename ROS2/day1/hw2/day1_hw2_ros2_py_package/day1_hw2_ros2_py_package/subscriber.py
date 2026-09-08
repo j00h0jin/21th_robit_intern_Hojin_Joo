@@ -2,6 +2,9 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import String
+from std_msgs.msg import Int32
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 
 class HelloworldSubscriber(Node):
 

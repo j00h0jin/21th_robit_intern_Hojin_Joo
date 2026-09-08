@@ -5,6 +5,9 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import String
+from std_msgs.msg import Int32
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 
 # 이 노드의 메인 클래스는 HelloworldPublisher이고 Node 클래스를 상속해 사용할 예정
 class HelloworldPublisher(Node):
