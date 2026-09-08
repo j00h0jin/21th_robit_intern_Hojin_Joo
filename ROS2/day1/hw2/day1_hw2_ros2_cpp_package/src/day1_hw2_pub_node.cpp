@@ -3,15 +3,34 @@
 Day1Hw2PubNode::Day1Hw2PubNode() : Node("day1_hw2_pub_node")
 {
     publisher_ = this->create_publisher<std_msgs::msg::String>("day1_hw2_topic", 10);
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&Day1Hw2PubNode::timer_callback, this));
+    pubInt_ = this->create_publisher<std_msgs::msg::Int32>("topic_int", 10);
+    pubBool_ = this->create_publisher<std_msgs::msg::Bool>("topic_bool", 10);
+    pubFloat_ = this->create_publisher<std_msgs::msg::Float32>("topic_float", 10);
+
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(2000), std::bind(&Day1Hw2PubNode::timer_callback, this));
 }
 
 void Day1Hw2PubNode::timer_callback()
 {
-    auto message = std_msgs::msg::String();
-    message.data = "Hello ROS 2! " + std::to_string(++count_); // 필요시 count 변수 추가 또는 단순 문자열 사용
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    publisher_->publish(message);
+    auto msgString = std_msgs::msg::String();
+    msgString.data = "Hello ROS 2! " + std::to_string(count_++);
+    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", msgString.data.c_str());
+    publisher_->publish(msgString);
+
+    auto msgInt = std_msgs::msg::Int32();
+    msgInt.data = 2024405020;
+    RCLCPP_INFO(this->get_logger(), "Publishing: '%d'", msgInt.data);
+    pubInt_->publish(msgInt);
+
+    auto msgBool = std_msgs::msg::Bool();
+    msgBool.data = true;
+    RCLCPP_INFO(this->get_logger(), "Publishing: '%d'", msgBool.data);
+    pubBool_->publish(msgBool);
+
+    auto msgFloat = std_msgs::msg::Float32();
+    msgFloat.data = 3.141592;
+    RCLCPP_INFO(this->get_logger(), "Publishing: '%f'", msgFloat.data);
+    pubFloat_->publish(msgFloat);
 }
 
 int main(int argc, char *argv[])
