@@ -11,10 +11,10 @@ class HelloworldSubscriber(Node):
   def __init__(self):
     super().__init__('py_subscriber')
     qos_profile = QoSProfile(depth=10)
-    self.helloworld_subscriber = self.create_subscription(String, 'string', self.subscribe_topic_message, qos_profile)
-    self.int_subscriber = self.create_subscription(Int32, 'int', self.subscribe_topic_message, qos_profile)
-    self.bool_subscriber = self.create_subscription(Bool, 'bool', self.subscribe_topic_message, qos_profile)
-    self.float_subscriber = self.create_subscription(Float32, 'float', self.subscribe_topic_message, qos_profile)
+    self.helloworld_subscriber = self.create_subscription(String, 'topic_string', self.subscribe_topic_message, qos_profile)
+    self.int_subscriber = self.create_subscription(Int32, 'topic_int', self.subscribe_topic_message, qos_profile)
+    self.bool_subscriber = self.create_subscription(Bool, 'topic_bool', self.subscribe_topic_message, qos_profile)
+    self.float_subscriber = self.create_subscription(Float32, 'topic_float', self.subscribe_topic_message, qos_profile)
     
   def subscribe_topic_message(self, msg):
     self.get_logger().info(f'Reveived message: {msg.data}')

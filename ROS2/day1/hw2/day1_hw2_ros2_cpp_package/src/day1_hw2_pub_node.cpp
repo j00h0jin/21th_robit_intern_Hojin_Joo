@@ -2,7 +2,7 @@
 
 Day1Hw2PubNode::Day1Hw2PubNode() : Node("day1_hw2_pub_node")
 {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("day1_hw2_topic", 10);
+    publisher_ = this->create_publisher<std_msgs::msg::String>("topic_string", 10);
     pubInt_ = this->create_publisher<std_msgs::msg::Int32>("topic_int", 10);
     pubBool_ = this->create_publisher<std_msgs::msg::Bool>("topic_bool", 10);
     pubFloat_ = this->create_publisher<std_msgs::msg::Float32>("topic_float", 10);
