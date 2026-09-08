@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(test_pkg)
+project(day1_hw2_ros2_cpp_package)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -9,12 +9,20 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
-add_executable(my_cpp_node src/my_cpp_node.cpp)
-ament_target_dependencies(my_cpp_node rclcpp)
+
+
+include_directories(include)
+add_executable(day1_hw2_pub_node src/day1_hw2_pub_node.cpp)
+ament_target_dependencies(day1_hw2_pub_node rclcpp std_msgs)
+
+add_executable(day1_hw2_sub_node src/day1_hw2_sub_node.cpp)
+ament_target_dependencies(day1_hw2_sub_node rclcpp std_msgs)
+
 install(TARGETS
-my_cpp_node
-DESTINATION lib/${PROJECT_NAME})
+  day1_hw2_pub_node
+  day1_hw2_sub_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
