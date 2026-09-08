@@ -31,6 +31,7 @@ class HelloworldPublisher(Node):
   # 앞에서 지정한 publish_helloworld_msg 콜백함수
   # 실제 데이터는 msg.data에 저장
   def publish_helloworld_msg(self):
+    
     msg = String()
     msg.data = f'Hello World {self.count}'
     self.string_publisher.publish(msg)
