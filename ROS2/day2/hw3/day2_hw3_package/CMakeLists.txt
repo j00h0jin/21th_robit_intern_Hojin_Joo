@@ -24,7 +24,6 @@ file(GLOB PRO_SOURCE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  src/*.cpp
 file(GLOB PRO_UI_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  ui/*.ui)
 file(GLOB PRO_INCLUDE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  include/${PROJECT_NAME}/*.h include/${PROJECT_NAME}/*.hpp)
 file(GLOB PRO_RESOURCE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  resource/*.qrc)
-qt5_wrap_ui(QT_UI_HPP ${PRO_UI_DIR})
 qt5_wrap_cpp(QT_MOC_HPP ${PRO_INCLUDE_DIR})
 qt5_add_resources(QT_RESOUCE_HPP ${PRO_RESOURCE_DIR})
 include_directories(
@@ -37,7 +36,6 @@ add_executable(${PROJECT_NAME}
     ${PRO_UI_DIR}
     ${QT_MOC_HPP}
     ${QT_RESOUCE_HPP}
-    ${QT_UI_HPP} 
   )
 ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs Boost )
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network ${OpenCV_LIBRARIES})
