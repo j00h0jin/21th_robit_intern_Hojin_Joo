@@ -9,13 +9,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(custom_interfaces REQUIRED)
 
 include_directories(include)
 add_executable(day2_hw1_pub_node src/day2_hw1_pub_node.cpp)
-ament_target_dependencies(day2_hw1_pub_node rclcpp std_msgs)
+ament_target_dependencies(day2_hw1_pub_node rclcpp std_msgs custom_interfaces)
 
 add_executable(day2_hw1_sub_node src/day2_hw1_sub_node.cpp)
-ament_target_dependencies(day2_hw1_sub_node rclcpp std_msgs)
+ament_target_dependencies(day2_hw1_sub_node rclcpp std_msgs custom_interfaces)
 
 install(TARGETS
   day2_hw1_pub_node

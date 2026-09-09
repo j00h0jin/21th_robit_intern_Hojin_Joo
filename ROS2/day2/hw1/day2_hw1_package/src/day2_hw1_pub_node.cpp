@@ -1,36 +1,40 @@
 #include "day2_hw1_package/day2_hw1_pub_node.hpp"
 
+#include <sstream>
+
 Day2Hw1PubNode::Day2Hw1PubNode() : Node("day2_hw1_pub_node")
 {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("topic_string", 10);
-    pubInt_ = this->create_publisher<std_msgs::msg::Int32>("topic_int", 10);
-    pubBool_ = this->create_publisher<std_msgs::msg::Bool>("topic_bool", 10);
-    pubFloat_ = this->create_publisher<std_msgs::msg::Float32>("topic_float", 10);
+    pubTwoInts_ = this->create_publisher<custom_interfaces::msg::AddTwoInts>("topic_twoInts", 10);
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(2000), std::bind(&Day2Hw1PubNode::timer_callback, this));
 }
 
 void Day2Hw1PubNode::timer_callback()
 {
-    auto msgString = std_msgs::msg::String();
-    msgString.data = "Hello ROS 2! " + std::to_string(count_++);
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", msgString.data.c_str());
-    publisher_->publish(msgString);
+    auto msgTwoInts = custom_interfaces::msg::AddTwoInts();
+    msgTwoInts.a = 2147483648; // Int64
+    msgTwoInts.b = {1, 2, 3};  // Int32[]
+    // RCLCPP_INFO(this->get_logger(), "Publishing: {a: %lld b:", msgTwoInts.a);
+    // for (int i = 0; i < msgTwoInts.b.size(); i++)
+    // {
+    //     RCLCPP_INFO(this->get_logger(), " ,%d", msgTwoInts.b[i]);
+    // }
+    // RCLCPP_INFO(this->get_logger(), "}");
 
-    auto msgInt = std_msgs::msg::Int32();
-    msgInt.data = 2024405020;
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%d'", msgInt.data);
-    pubInt_->publish(msgInt);
+    std::stringstream ss;
+    ss << "Pub: {a: " << msgTwoInts.a << ", b: [";
+    for (size_t i = 0; i < msgTwoInts.b.size(); ++i)
+    {
+        ss << msgTwoInts.b[i];
+        if (i < msgTwoInts.b.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+    ss << "]}";
 
-    auto msgBool = std_msgs::msg::Bool();
-    msgBool.data = true;
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%d'", msgBool.data);
-    pubBool_->publish(msgBool);
-
-    auto msgFloat = std_msgs::msg::Float32();
-    msgFloat.data = 3.141592;
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%f'", msgFloat.data);
-    pubFloat_->publish(msgFloat);
+    RCLCPP_INFO(this->get_logger(), "%s", ss.str().c_str()); // ss.str(): stream을 string으로 변환
+    pubTwoInts_->publish(msgTwoInts);
 }
 
 int main(int argc, char *argv[])

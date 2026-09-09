@@ -1,38 +1,29 @@
 #include "day2_hw1_package/day2_hw1_sub_node.hpp"
 
+#include <sstream>
+
 Day2Hw1SubNode::Day2Hw1SubNode() : Node("day2_hw1_sub_node")
 {
-    subscriber_ = this->create_subscription<std_msgs::msg::String>(
-        "topic_string", 10, std::bind(&Day2Hw1SubNode::topic_callback, this, std::placeholders::_1));
-
-    subInt_ = this->create_subscription<std_msgs::msg::Int32>(
-        "topic_int", 10, std::bind(&Day2Hw1SubNode::int_callback, this, std::placeholders::_1));
-
-    subBool_ = this->create_subscription<std_msgs::msg::Bool>(
-        "topic_bool", 10, std::bind(&Day2Hw1SubNode::bool_callback, this, std::placeholders::_1));
-
-    subFloat_ = this->create_subscription<std_msgs::msg::Float32>(
-        "topic_float", 10, std::bind(&Day2Hw1SubNode::float_callback, this, std::placeholders::_1));
+    subTwoInts_ = this->create_subscription<custom_interfaces::msg::AddTwoInts>(
+        "topic_twoInts", 10, std::bind(&Day2Hw1SubNode::topic_callback, this, std::placeholders::_1));
 }
 
-void Day2Hw1SubNode::topic_callback(const std_msgs::msg::String::SharedPtr msg) const
+void Day2Hw1SubNode::topic_callback(const custom_interfaces::msg::AddTwoInts::SharedPtr msg) const
 {
-    RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
-}
+    std::stringstream ss;
+    ss << "sub: {a: " << msg->a << ", b: [";
+    for (size_t i = 0; i < msg->b.size(); ++i)
+    {
+        ss << msg->b[i];
+        if (i < msg->b.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+    ss << "]}";
 
-void Day2Hw1SubNode::int_callback(const std_msgs::msg::Int32::SharedPtr msg) const
-{
-    RCLCPP_INFO(this->get_logger(), "I heard Int: '%d'", msg->data);
-}
-
-void Day2Hw1SubNode::bool_callback(const std_msgs::msg::Bool::SharedPtr msg) const
-{
-    RCLCPP_INFO(this->get_logger(), "I heard Bool: '%d'", msg->data);
-}
-
-void Day2Hw1SubNode::float_callback(const std_msgs::msg::Float32::SharedPtr msg) const
-{
-    RCLCPP_INFO(this->get_logger(), "I heard Float: '%f'", msg->data);
+    RCLCPP_INFO(this->get_logger(), "%s",
+                ss.str().c_str()); // .str(): string으로 변환, c_str() char* 형으로 변환
 }
 
 int main(int argc, char *argv[])
