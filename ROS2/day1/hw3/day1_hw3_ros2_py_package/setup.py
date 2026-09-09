@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'turtlesim_control_node = day1_hw3_ros2_py_package.turtlesim_control_node:main',
         ],
     },
 )
