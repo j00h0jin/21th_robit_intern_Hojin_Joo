@@ -38,7 +38,12 @@ add_executable(${PROJECT_NAME}
     ${QT_MOC_HPP}
     ${QT_RESOUCE_HPP}
     ${QT_UI_HPP} 
-  )
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+)
+
 ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs Boost )
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network ${OpenCV_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
