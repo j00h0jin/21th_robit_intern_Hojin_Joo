@@ -18,6 +18,8 @@ find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(turtlesim REQUIRED)
 
 
 file(GLOB PRO_SOURCE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  src/*.cpp)
@@ -44,7 +46,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
 )
 
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs Boost )
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs geometry_msgs turtlesim Boost )
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network ${OpenCV_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
