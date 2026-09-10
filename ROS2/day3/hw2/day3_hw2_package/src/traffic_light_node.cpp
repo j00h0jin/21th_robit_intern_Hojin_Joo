@@ -16,7 +16,7 @@
 
 TrafficLightNode::TrafficLightNode() : Node("traffic_light_node")
 {
-    state_publisher_ = create_publisher<std_msgs::msg::String>("traffic_light_state", 10);
+    state_publisher_ = create_publisher<std_msgs::msg::String>("topic_traffic", 10);
 
     declare_parameter<double>("red_duration", 5.0);
     declare_parameter<double>("green_duration", 5.0);

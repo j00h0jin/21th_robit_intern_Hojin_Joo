@@ -43,10 +43,18 @@ add_executable(vehicle_node
 target_include_directories(vehicle_node PRIVATE ${PACKAGE_INCLUDE_DIR})
 ament_target_dependencies(vehicle_node rclcpp std_msgs)
 
+add_executable(day3_hw2_sub_node
+  src/day3_hw2_sub_node.cpp
+  include/${PROJECT_NAME}/day3_hw2_sub_node.hpp
+)
+target_include_directories(day3_hw2_sub_node PRIVATE ${PACKAGE_INCLUDE_DIR})
+ament_target_dependencies(day3_hw2_sub_node rclcpp std_msgs)
+
 install(TARGETS
   ${PROJECT_NAME}
   traffic_light_node
   vehicle_node
+  day3_hw2_sub_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
