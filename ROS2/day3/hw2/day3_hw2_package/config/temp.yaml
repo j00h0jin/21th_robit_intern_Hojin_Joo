@@ -1,6 +1,0 @@
-turtlesim_control: # node name
-  ros__parameters: # ros__parameters 고정
-    r: 255
-    g: 0
-    b: 255
-    width: 9

@@ -1,0 +1,6 @@
+vehicle_node: # node name
+  ros__parameters: # ros__parameters 고정
+    speed: 1.0
+    deceleration: 0.5
+    start_x: 0.0
+    start_y: 0.0

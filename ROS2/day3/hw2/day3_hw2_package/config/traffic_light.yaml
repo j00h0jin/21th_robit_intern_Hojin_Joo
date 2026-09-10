@@ -1,0 +1,5 @@
+traffic_light_node: # node name
+  ros__parameters: # ros__parameters 고정
+    red_duration: 5.0
+    green_duration: 5.0
+    yellow_duration: 2.0
