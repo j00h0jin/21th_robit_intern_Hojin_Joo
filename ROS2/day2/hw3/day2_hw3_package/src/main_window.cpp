@@ -15,6 +15,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    // QPushButton *pubBtn;
+    // QPlainTextEdit *pubPlain;
+
+    // QPushButton *subBtn;
+    // QPlainTextEdit *subPlain;
+
     QIcon icon("://ros-icon.png");
     this->setWindowIcon(icon);
 
@@ -33,4 +39,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_pubBtn_clicked()
+{
+    QString msg = ui->pubPlain->toPlainText();
+    qpub->pubString(msg);
+
+    ui->pubPlain->clear(); // 입력창 비우기
 }

@@ -20,7 +20,56 @@
   <property name="locale">
    <locale language="English" country="Australia"/>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>pub</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="pubPlain"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pubBtn">
+          <property name="text">
+           <string>pubBtn</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>sub</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="subPlain"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="subBtn">
+          <property name="text">
+           <string>subBtn</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
   <action name="action_Quit">
    <property name="text">
     <string>&amp;Quit</string>

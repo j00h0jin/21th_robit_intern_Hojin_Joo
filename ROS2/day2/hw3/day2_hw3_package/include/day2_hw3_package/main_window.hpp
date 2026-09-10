@@ -18,6 +18,8 @@
 #include "qsub.hpp"
 #include "ui_mainwindow.h"
 #include <QMainWindow>
+#include <QPlainTextEdit>
+#include <QPushButton>
 
 /*****************************************************************************
 ** Interface [MainWindow]
@@ -34,6 +36,9 @@ class MainWindow : public QMainWindow
     ~MainWindow();
     QPub *qpub;
     QSub *qsub;
+
+  private slots:
+    void on_pubBtn_clicked();
 
   private:
     Ui::MainWindow *ui;

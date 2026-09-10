@@ -14,19 +14,13 @@
 
 QPub::QPub()
 {
-    int argc = 0;
-    char **argv = NULL;
-    rclcpp::init(argc, argv);
     node = rclcpp::Node::make_shared("day2_hw3_pub");
+    publisher_ = node->create_publisher<std_msgs::msg::String>("topic_string", 10);
     this->start();
 }
 
 QPub::~QPub()
 {
-    if (rclcpp::ok())
-    {
-        rclcpp::shutdown();
-    }
 }
 
 void QPub::run()
@@ -37,6 +31,15 @@ void QPub::run()
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
-    rclcpp::shutdown();
     Q_EMIT rosShutDown();
+}
+
+void QPub::pubString(QString msg)
+{
+
+    auto msgString = std_msgs::msg::String();
+    msgString.data = msg.toUtf8().toStdString();
+    // msgString.data = "Hello ROS 2! ";
+    RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", msgString.data.c_str());
+    publisher_->publish(msgString);
 }
