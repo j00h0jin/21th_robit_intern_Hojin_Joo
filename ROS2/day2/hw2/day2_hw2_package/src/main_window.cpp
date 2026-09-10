@@ -10,25 +10,33 @@
 *****************************************************************************/
 
 #include "../include/day2_hw2_package/main_window.hpp"
+#include <QString>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-  ui->setupUi(this);
+    ui->setupUi(this);
 
-  QIcon icon("://ros-icon.png");
-  this->setWindowIcon(icon);
+    QIcon icon("://ros-icon.png");
+    this->setWindowIcon(icon);
 
-  qnode = new QNode();
+    qnode = new QNode();
 
-  QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
+    QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
-  QMainWindow::closeEvent(event);
+    QMainWindow::closeEvent(event);
 }
 
 MainWindow::~MainWindow()
 {
-  delete ui;
+    delete ui;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    const QString velText =
+        QString("linear X: %1\nangular Z: %2").arg(qnode->linearXValue, 0, 'f', 2).arg(qnode->angularZValue, 0, 'f', 4);
+    ui->label->setText(velText);
 }

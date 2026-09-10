@@ -31,6 +31,8 @@ class QNode : public QThread
   public:
     QNode();
     ~QNode();
+    std::atomic<float> linearXValue{0.0};
+    std::atomic<float> angularZValue{0.0};
 
   protected:
     void run();
@@ -54,6 +56,9 @@ class QNode : public QThread
     std::atomic<char> currentMode{'\0'};
     std::atomic<int> i{0};
     std::thread keyboardThread;
+
+    void velCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr velSub;
 
   Q_SIGNALS:
     void rosShutDown();

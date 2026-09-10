@@ -26,6 +26,8 @@ QNode::QNode()
     char **argv = NULL;
     rclcpp::init(argc, argv);
     node = rclcpp::Node::make_shared("day2_hw2_package");
+    velSub = node->create_subscription<geometry_msgs::msg::Twist>(
+        "/turtle1/cmd_vel", 10, std::bind(&QNode::velCallback, this, std::placeholders::_1));
 
     publisher = node->create_publisher<geometry_msgs::msg::Twist>("turtle1/cmd_vel", 10);
     penClient = node->create_client<turtlesim::srv::SetPen>("/turtle1/set_pen");
@@ -65,6 +67,12 @@ void QNode::run()
     }
     rclcpp::shutdown();
     Q_EMIT rosShutDown();
+}
+
+void QNode::velCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+{
+    linearXValue.store(msg->linear.x);
+    angularZValue.store(msg->angular.z);
 }
 
 void QNode::keyboardListenerLoop()
