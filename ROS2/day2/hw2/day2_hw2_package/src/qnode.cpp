@@ -20,22 +20,22 @@
 #include <thread>
 #include <unistd.h>
 
-QNode::QNode()
+HW2QNode::HW2QNode()
 {
     int argc = 0;
     char **argv = NULL;
     rclcpp::init(argc, argv);
     node = rclcpp::Node::make_shared("day2_hw2_package");
     velSub = node->create_subscription<geometry_msgs::msg::Twist>(
-        "/turtle1/cmd_vel", 10, std::bind(&QNode::velCallback, this, std::placeholders::_1));
+        "/turtle1/cmd_vel", 10, std::bind(&HW2QNode::velCallback, this, std::placeholders::_1));
 
     publisher = node->create_publisher<geometry_msgs::msg::Twist>("turtle1/cmd_vel", 10);
     penClient = node->create_client<turtlesim::srv::SetPen>("/turtle1/set_pen");
-    keyboardThread = std::thread(&QNode::keyboardListenerLoop, this);
+    keyboardThread = std::thread(&HW2QNode::keyboardListenerLoop, this);
     this->start(); // start -> run() 실행
 }
 
-QNode::~QNode()
+HW2QNode::~HW2QNode()
 {
     isRunning = false;
     if (keyboardThread.joinable()) // thread 종료 대기
@@ -49,7 +49,7 @@ QNode::~QNode()
     wait(); // run() 종료 대기
 }
 
-void QNode::run()
+void HW2QNode::run()
 {
     rclcpp::WallRate loop_rate(20);
 
@@ -69,13 +69,13 @@ void QNode::run()
     Q_EMIT rosShutDown();
 }
 
-void QNode::velCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void HW2QNode::velCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
     linearXValue.store(msg->linear.x);
     angularZValue.store(msg->angular.z);
 }
 
-void QNode::keyboardListenerLoop()
+void HW2QNode::keyboardListenerLoop()
 {
     if (!isatty(STDIN_FILENO)) // 터미널인지
         return;
@@ -113,7 +113,7 @@ void QNode::keyboardListenerLoop()
     tcsetattr(STDIN_FILENO, TCSADRAIN, &settings);
 }
 
-void QNode::controlLoop()
+void HW2QNode::controlLoop()
 {
     switch (currentMode.load())
     {
@@ -138,7 +138,7 @@ void QNode::controlLoop()
     }
 }
 
-void QNode::setPen(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t width, std::uint8_t off)
+void HW2QNode::setPen(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t width, std::uint8_t off)
 {
     if (!penClient->wait_for_service(std::chrono::milliseconds(100)))
         return;
@@ -152,7 +152,7 @@ void QNode::setPen(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std:
     penClient->async_send_request(request);
 }
 
-void QNode::circle()
+void HW2QNode::circle()
 {
     if (i == 0)
         setPen(0, 255, 0, 4);
@@ -170,7 +170,7 @@ void QNode::circle()
     i += 1;
 }
 
-void QNode::rectangle()
+void HW2QNode::rectangle()
 {
     if (i == 0)
         setPen(255, 0, 0, 5);
@@ -191,7 +191,7 @@ void QNode::rectangle()
     i += 1;
 }
 
-void QNode::triangle()
+void HW2QNode::triangle()
 {
     if (i == 0)
         setPen(255, 0, 255, 6);
@@ -210,7 +210,7 @@ void QNode::triangle()
     i += 1;
 }
 
-void QNode::pentagon()
+void HW2QNode::pentagon()
 {
     if (i == 0)
         setPen(0, 0, 255, 7);

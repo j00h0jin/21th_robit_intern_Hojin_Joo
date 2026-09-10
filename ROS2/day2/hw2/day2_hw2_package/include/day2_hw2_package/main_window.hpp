@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow
   public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    QNode *qnode;
+    HW2QNode *qnode;
 
   private slots:
     void on_pushButton_clicked();

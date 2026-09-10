@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     QIcon icon("://ros-icon.png");
     this->setWindowIcon(icon);
 
-    qnode = new QNode();
+    qnode = new HW2QNode();
 
     QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
 }

@@ -25,12 +25,12 @@
 /*****************************************************************************
 ** Class
 *****************************************************************************/
-class QNode : public QThread
+class HW2QNode : public QThread
 {
     Q_OBJECT
   public:
-    QNode();
-    ~QNode();
+    HW2QNode();
+    ~HW2QNode();
     std::atomic<float> linearXValue{0.0};
     std::atomic<float> angularZValue{0.0};
 
