@@ -8,7 +8,13 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(turtlesim REQUIRED)
+
+add_executable(${PROJECT_NAME} src/node.cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+ament_target_dependencies(${PROJECT_NAME} rclcpp geometry_msgs turtlesim)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
