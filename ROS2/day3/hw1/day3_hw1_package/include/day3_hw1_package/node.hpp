@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 
+#include "day3_hw1_package/parameter.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "turtlesim/srv/set_pen.hpp"
@@ -19,7 +20,7 @@ class TurtlesimControl : public rclcpp::Node
   private:
     void keyboardListenerLoop();
     void controlLoopCallback();
-    void setPen(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t width, std::uint8_t off = 0);
+    void setPen(std::uint8_t off = 0);
     void circle();
     void triangle();
     void rectangle();
@@ -32,6 +33,8 @@ class TurtlesimControl : public rclcpp::Node
     std::atomic<int> step_{0};
     std::atomic<char> current_mode_{'\0'};
     std::atomic<bool> is_running_{true};
+
+    std::unique_ptr<Parameter> config_;
 };
 
 #endif

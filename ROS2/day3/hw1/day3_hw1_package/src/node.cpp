@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <fcntl.h>
 #include <sys/select.h>
 #include <termios.h>
 #include <unistd.h>
@@ -14,6 +15,8 @@ TurtlesimControl::TurtlesimControl() : Node("turtlesim_control")
     control_timer_ = create_wall_timer(1s, std::bind(&TurtlesimControl::controlLoopCallback, this));
     pen_client_ = create_client<turtlesim::srv::SetPen>("/turtle1/set_pen");
     keyboard_thread_ = std::thread(&TurtlesimControl::keyboardListenerLoop, this);
+
+    config_ = std::make_unique<Parameter>(this);
 }
 
 TurtlesimControl::~TurtlesimControl()
@@ -25,30 +28,42 @@ TurtlesimControl::~TurtlesimControl()
 
 void TurtlesimControl::keyboardListenerLoop()
 {
-    if (!isatty(STDIN_FILENO))
+    int input_fd = open("/dev/tty", O_RDWR);
+    if (input_fd < 0)
+        input_fd = STDIN_FILENO;
+
+    if (!isatty(input_fd))
+    {
+        if (input_fd != STDIN_FILENO)
+            close(input_fd);
         return;
+    }
 
     termios settings{};
-    if (tcgetattr(STDIN_FILENO, &settings) != 0)
+    if (tcgetattr(input_fd, &settings) != 0)
+    {
+        if (input_fd != STDIN_FILENO)
+            close(input_fd);
         return;
+    }
 
     termios raw_settings = settings;
     raw_settings.c_lflag &= static_cast<unsigned long>(~(ICANON | ECHO));
     raw_settings.c_cc[VMIN] = 0;
     raw_settings.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSADRAIN, &raw_settings);
+    tcsetattr(input_fd, TCSADRAIN, &raw_settings);
 
     while (is_running_ && rclcpp::ok())
     {
         fd_set input_set;
         FD_ZERO(&input_set);
-        FD_SET(STDIN_FILENO, &input_set);
+        FD_SET(input_fd, &input_set);
         timeval timeout{0, 100000};
 
-        if (select(STDIN_FILENO + 1, &input_set, nullptr, nullptr, &timeout) > 0)
+        if (select(input_fd + 1, &input_set, nullptr, nullptr, &timeout) > 0)
         {
             char key = '\0';
-            if (read(STDIN_FILENO, &key, 1) == 1 && current_mode_ == '\0' &&
+            if (read(input_fd, &key, 1) == 1 && current_mode_ == '\0' &&
                 (key == 'w' || key == 'a' || key == 's' || key == 'd'))
             {
                 current_mode_ = key;
@@ -57,7 +72,9 @@ void TurtlesimControl::keyboardListenerLoop()
         }
     }
 
-    tcsetattr(STDIN_FILENO, TCSADRAIN, &settings);
+    tcsetattr(input_fd, TCSADRAIN, &settings);
+    if (input_fd != STDIN_FILENO)
+        close(input_fd);
 }
 
 void TurtlesimControl::controlLoopCallback()
@@ -81,17 +98,16 @@ void TurtlesimControl::controlLoopCallback()
     }
 }
 
-void TurtlesimControl::setPen(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t width,
-                              std::uint8_t off)
+void TurtlesimControl::setPen(std::uint8_t off)
 {
     if (!pen_client_->wait_for_service(100ms))
         return;
 
     auto request = std::make_shared<turtlesim::srv::SetPen::Request>();
-    request->r = red;
-    request->g = green;
-    request->b = blue;
-    request->width = width;
+    request->r = config_->r();
+    request->g = config_->g();
+    request->b = config_->b();
+    request->width = config_->width();
     request->off = off;
     pen_client_->async_send_request(request);
 }
@@ -99,7 +115,7 @@ void TurtlesimControl::setPen(std::uint8_t red, std::uint8_t green, std::uint8_t
 void TurtlesimControl::circle()
 {
     if (step_ == 0)
-        setPen(0, 255, 0, 4);
+        setPen();
 
     geometry_msgs::msg::Twist message;
     message.linear.x = 2.0;
@@ -119,7 +135,7 @@ void TurtlesimControl::circle()
 void TurtlesimControl::rectangle()
 {
     if (step_ == 0)
-        setPen(255, 0, 0, 5);
+        setPen();
 
     geometry_msgs::msg::Twist message;
     if (step_ % 2 == 0)
@@ -141,7 +157,7 @@ void TurtlesimControl::rectangle()
 void TurtlesimControl::triangle()
 {
     if (step_ == 0)
-        setPen(255, 0, 255, 6);
+        setPen();
 
     geometry_msgs::msg::Twist message;
     if (step_ % 2 == 0)
@@ -163,7 +179,7 @@ void TurtlesimControl::triangle()
 void TurtlesimControl::pentagon()
 {
     if (step_ == 0)
-        setPen(0, 0, 255, 7);
+        setPen();
 
     geometry_msgs::msg::Twist message;
     if (step_ % 2 == 0)
