@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 project(day3_hw2_package)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -10,47 +9,52 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(Boost 1.71.0 REQUIRED COMPONENTS thread)
 find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
+set(PACKAGE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(GLOB PRO_SOURCE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  src/*.cpp)
-file(GLOB PRO_UI_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  ui/*.ui)
-file(GLOB PRO_INCLUDE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  include/${PROJECT_NAME}/*.h include/${PROJECT_NAME}/*.hpp)
-file(GLOB PRO_RESOURCE_DIR RELATIVE ${CMAKE_SOURCE_DIR} FOLLOW_SYMLINKS  resource/*.qrc)
-
-qt5_wrap_cpp(QT_MOC_HPP ${PRO_INCLUDE_DIR})
-qt5_add_resources(QT_RESOUCE_HPP ${PRO_RESOURCE_DIR})
-include_directories(
-	include/
-	${CMAKE_CURRENT_BINARY_DIR}
-)
 add_executable(${PROJECT_NAME}
-    ${PRO_SOURCE_DIR}
-    ${PRO_INCLUDE_DIR}
-    ${PRO_UI_DIR}
-    ${QT_MOC_HPP}
-    ${QT_RESOUCE_HPP}
-     
-  )
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs Boost )
-target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network ${OpenCV_LIBRARIES})
-install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+  src/main.cpp
+  src/main_window.cpp
+  ui/mainwindow.ui
+  resources/images.qrc
+  include/${PROJECT_NAME}/main_window.hpp
+)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PACKAGE_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+)
+
+add_executable(traffic_light_node
+  src/traffic_light_node.cpp
+  include/${PROJECT_NAME}/traffic_light_node.hpp
+)
+target_include_directories(traffic_light_node PRIVATE ${PACKAGE_INCLUDE_DIR})
+ament_target_dependencies(traffic_light_node rclcpp std_msgs)
+
+add_executable(vehicle_node
+  src/vehicle_node.cpp
+  include/${PROJECT_NAME}/vehicle_node.hpp
+)
+target_include_directories(vehicle_node PRIVATE ${PACKAGE_INCLUDE_DIR})
+ament_target_dependencies(vehicle_node rclcpp std_msgs)
+
+install(TARGETS
+  ${PROJECT_NAME}
+  traffic_light_node
+  vehicle_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME}/)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-)
 
 ament_package()
