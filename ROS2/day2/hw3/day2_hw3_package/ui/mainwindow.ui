@@ -57,13 +57,6 @@
         <item>
          <widget class="QPlainTextEdit" name="subPlain"/>
         </item>
-        <item>
-         <widget class="QPushButton" name="subBtn">
-          <property name="text">
-           <string>subBtn</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>

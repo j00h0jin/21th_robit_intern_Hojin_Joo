@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     qsub = new QSub();
     QObject::connect(qsub, &QSub::rosShutDown, this, &MainWindow::close);
+    QObject::connect(qsub, &QSub::receivedString, ui->subPlain, &QPlainTextEdit::setPlainText);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

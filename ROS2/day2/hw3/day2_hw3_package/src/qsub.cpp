@@ -14,19 +14,14 @@
 
 QSub::QSub()
 {
-    int argc = 0;
-    char **argv = NULL;
-    rclcpp::init(argc, argv);
     node = rclcpp::Node::make_shared("day2_hw3_sub");
+    subscriber_ = node->create_subscription<std_msgs::msg::String>(
+        "topic_string", 10, std::bind(&QSub::topic_callback, this, std::placeholders::_1));
     this->start();
 }
 
 QSub::~QSub()
 {
-    if (rclcpp::ok())
-    {
-        rclcpp::shutdown();
-    }
 }
 
 void QSub::run()
@@ -37,6 +32,11 @@ void QSub::run()
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
-    rclcpp::shutdown();
     Q_EMIT rosShutDown();
+}
+
+void QSub::topic_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+    RCLCPP_INFO(node->get_logger(), "I heard: '%s'", msg->data.c_str());
+    Q_EMIT receivedString(QString::fromStdString(msg->data));
 }
