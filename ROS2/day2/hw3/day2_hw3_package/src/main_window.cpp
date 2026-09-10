@@ -11,24 +11,26 @@
 
 #include "../include/day2_hw3_package/main_window.hpp"
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-  ui->setupUi(this);
+    ui->setupUi(this);
 
-  QIcon icon("://ros-icon.png");
-  this->setWindowIcon(icon);
+    QIcon icon("://ros-icon.png");
+    this->setWindowIcon(icon);
 
-  qnode = new QNode();
+    qpub = new QPub();
+    QObject::connect(qpub, &QPub::rosShutDown, this, &MainWindow::close);
 
-  QObject::connect(qnode, SIGNAL(rosShutDown()), this, SLOT(close()));
+    qsub = new QSub();
+    QObject::connect(qsub, &QSub::rosShutDown, this, &MainWindow::close);
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
-  QMainWindow::closeEvent(event);
+    QMainWindow::closeEvent(event);
 }
 
 MainWindow::~MainWindow()
 {
-  delete ui;
+    delete ui;
 }

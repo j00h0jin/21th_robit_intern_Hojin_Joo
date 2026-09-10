@@ -1,5 +1,5 @@
 /**
- * @file /include/day2_hw3_package/qnode.hpp
+ * @file /include/day2_hw3_package/qsub.hpp
  *
  * @brief Communications central!
  *
@@ -9,8 +9,8 @@
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef day2_hw3_package_QNODE_HPP_
-#define day2_hw3_package_QNODE_HPP_
+#ifndef day2_hw3_package_QSUB_HPP_
+#define day2_hw3_package_QSUB_HPP_
 
 /*****************************************************************************
 ** Includes
@@ -23,21 +23,21 @@
 /*****************************************************************************
 ** Class
 *****************************************************************************/
-class QNode : public QThread
+class QSub : public QThread
 {
-  Q_OBJECT
-public:
-  QNode();
-  ~QNode();
+    Q_OBJECT
+  public:
+    QSub();
+    ~QSub();
 
-protected:
-  void run();
+  protected:
+    void run();
 
-private:
-  std::shared_ptr<rclcpp::Node> node;
+  private:
+    std::shared_ptr<rclcpp::Node> node;
 
-Q_SIGNALS:
-  void rosShutDown();
+  Q_SIGNALS:
+    void rosShutDown();
 };
 
-#endif /* day2_hw3_package_QNODE_HPP_ */
+#endif /* day2_hw3_package_QSUB_HPP_ */

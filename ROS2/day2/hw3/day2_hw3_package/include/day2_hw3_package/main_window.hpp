@@ -13,10 +13,11 @@
 ** Includes
 *****************************************************************************/
 
-#include <QMainWindow>
 #include "QIcon"
-#include "qnode.hpp"
+#include "qpub.hpp"
+#include "qsub.hpp"
 #include "ui_mainwindow.h"
+#include <QMainWindow>
 
 /*****************************************************************************
 ** Interface [MainWindow]
@@ -26,16 +27,17 @@
  */
 class MainWindow : public QMainWindow
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
-  MainWindow(QWidget* parent = nullptr);
-  ~MainWindow();
-  QNode* qnode;
+  public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+    QPub *qpub;
+    QSub *qsub;
 
-private:
-  Ui::MainWindow* ui;
-  void closeEvent(QCloseEvent* event);
+  private:
+    Ui::MainWindow *ui;
+    void closeEvent(QCloseEvent *event);
 };
 
-#endif  // day2_hw3_package_MAIN_WINDOW_H
+#endif // day2_hw3_package_MAIN_WINDOW_H
