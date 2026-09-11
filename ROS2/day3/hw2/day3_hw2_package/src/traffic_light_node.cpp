@@ -27,7 +27,7 @@ TrafficLightNode::TrafficLightNode() : Node("traffic_light_node")
     yellow_duration_ = get_parameter("yellow_duration").as_double();
 
     current_state_ = "GREEN";
-    timer_ = create_wall_timer(std::chrono::milliseconds(100), std::bind(&TrafficLightNode::timer_callback, this));
+    timer_ = create_wall_timer(std::chrono::milliseconds(16), std::bind(&TrafficLightNode::timer_callback, this));
 }
 
 void TrafficLightNode::timer_callback()

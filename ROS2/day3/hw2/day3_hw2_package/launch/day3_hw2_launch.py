@@ -5,7 +5,6 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    # 패키지 내 config/test.yaml 경로를 상대 참조로 생성
     traffic_light_yaml_file_path = PathJoinSubstitution([
         FindPackageShare('day3_hw2_package'),
         'config',
@@ -33,6 +32,6 @@ def generate_launch_description():
         Node(
             package='day3_hw2_package',
             executable='day3_hw2_package',
-            name='day3_hw2_gui'
+            name='day3_hw2_sub_node'
         )
     ])
