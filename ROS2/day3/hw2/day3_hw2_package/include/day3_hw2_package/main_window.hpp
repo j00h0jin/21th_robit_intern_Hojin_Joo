@@ -14,8 +14,12 @@
 *****************************************************************************/
 
 #include "QIcon"
+#include "day3_hw2_sub_node.hpp"
 #include "ui_mainwindow.h"
+#include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
 #include <QMainWindow>
+#include <QTimer>
 
 /*****************************************************************************
 ** Interface [MainWindow]
@@ -33,6 +37,15 @@ class MainWindow : public QMainWindow
 
   private:
     Ui::MainWindow *ui;
+    std::shared_ptr<Day3Hw2SubNode> sub_node_;
+    QGraphicsScene *scene_;
+    QGraphicsEllipseItem *vehicle_item_;
+    QGraphicsEllipseItem *red_light_item_;
+    QGraphicsEllipseItem *yellow_light_item_;
+    QGraphicsEllipseItem *green_light_item_;
+    QTimer *ros_timer_;
+
+    void update_visualization();
     void closeEvent(QCloseEvent *event);
 };
 
