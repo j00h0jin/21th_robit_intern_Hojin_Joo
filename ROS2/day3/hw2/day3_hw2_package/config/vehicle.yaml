@@ -3,7 +3,7 @@ vehicle_node: # node name
     start_x: 0.0
     start_y: 5.0
     direction: "x"
-    stop_line_position: 3.0
+    stop_line_position: 5.0 # 일단 fix
     road_length: 7.0
     speed: 1.0
     acceleration: 0.5
