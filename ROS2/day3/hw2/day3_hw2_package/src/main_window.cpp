@@ -59,6 +59,9 @@ void MainWindow::update_visualization()
     const double scene_x = 50.0 + position.x * world_scale;
     const double scene_y = 450.0 - position.y * world_scale;
     vehicle_item_->setPos(scene_x - 14.0, scene_y - 14.0);
+
+    QString str = QString("X: %1, Y: %2").arg(position.x, 0, 'f', 2).arg(position.y, 0, 'f', 2);
+    ui->label->setText(str);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
