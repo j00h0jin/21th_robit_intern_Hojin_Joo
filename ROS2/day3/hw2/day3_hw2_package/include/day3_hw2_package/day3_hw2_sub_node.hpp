@@ -17,7 +17,7 @@ class Day3Hw2SubNode : public rclcpp::Node
 
     geometry_msgs::msg::Pose2D vehicle_position() const
     {
-      return cur_coordinate_;
+        return cur_coordinate_;
     }
 
   private:
