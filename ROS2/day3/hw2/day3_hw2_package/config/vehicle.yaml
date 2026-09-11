@@ -1,11 +1,12 @@
 vehicle_node: # node name
   ros__parameters: # ros__parameters 고정
     start_x: 0.0
-    start_y: 2.0
+    start_y: 5.0
     direction: "x"
-    stop_line_position: 10.0
-    road_length: 20.0
+    stop_line_position: 5.0
+    road_length: 7.0
     speed: 1.0
     acceleration: 0.5
     deceleration: 0.5
+    emergency_deceleration: 2.0
     max_speed: 2.0

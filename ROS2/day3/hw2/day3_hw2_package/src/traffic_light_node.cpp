@@ -32,7 +32,7 @@ TrafficLightNode::TrafficLightNode() : Node("traffic_light_node")
 
 void TrafficLightNode::timer_callback()
 {
-    const double timer_period = 0.1; // create_wall_timer(milliseconds(100), ...
+    const double timer_period = 0.016; // create_wall_timer(milliseconds(16), ...
     elapsed_time_ += timer_period;
 
     double state_duration = 0.0;

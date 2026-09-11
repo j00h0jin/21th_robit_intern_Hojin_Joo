@@ -10,6 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Core Gui Network REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -41,7 +42,7 @@ add_executable(vehicle_node
   include/${PROJECT_NAME}/vehicle_node.hpp
 )
 target_include_directories(vehicle_node PRIVATE ${PACKAGE_INCLUDE_DIR})
-ament_target_dependencies(vehicle_node rclcpp std_msgs)
+ament_target_dependencies(vehicle_node rclcpp std_msgs geometry_msgs)
 
 add_executable(day3_hw2_sub_node
   src/day3_hw2_sub_node.cpp
