@@ -20,11 +20,14 @@ set(PACKAGE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME}
   src/main.cpp
   src/main_window.cpp
+  src/day3_hw2_sub_node.cpp
   ui/mainwindow.ui
   resources/images.qrc
   include/${PROJECT_NAME}/main_window.hpp
+  include/${PROJECT_NAME}/day3_hw2_sub_node.hpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${PACKAGE_INCLUDE_DIR})
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs geometry_msgs)
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network)
 set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
@@ -44,18 +47,10 @@ add_executable(vehicle_node
 target_include_directories(vehicle_node PRIVATE ${PACKAGE_INCLUDE_DIR})
 ament_target_dependencies(vehicle_node rclcpp std_msgs geometry_msgs)
 
-add_executable(day3_hw2_sub_node
-  src/day3_hw2_sub_node.cpp
-  include/${PROJECT_NAME}/day3_hw2_sub_node.hpp
-)
-target_include_directories(day3_hw2_sub_node PRIVATE ${PACKAGE_INCLUDE_DIR})
-ament_target_dependencies(day3_hw2_sub_node rclcpp std_msgs)
-
 install(TARGETS
   ${PROJECT_NAME}
   traffic_light_node
   vehicle_node
-  day3_hw2_sub_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

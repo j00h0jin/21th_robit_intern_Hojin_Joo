@@ -14,17 +14,7 @@ void Day3Hw2SubNode::traffic_topic_callback(const std_msgs::msg::String::SharedP
     traffic_state_ = msg->data;
 }
 
-void Day3Hw2SubNode::vehicle_topic_callback(const geometry_msgs::msg::Pose2D msg)
+void Day3Hw2SubNode::vehicle_topic_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
 {
-    cur_coordinate_.x = msg.x;
-    cur_coordinate_.y = msg.y;
-}
-
-int main(int argc, char *argv[])
-{
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<Day3Hw2SubNode>();
-    rclcpp::spin(node);
-    rclcpp::shutdown();
-    return 0;
+    cur_coordinate_ = *msg;
 }

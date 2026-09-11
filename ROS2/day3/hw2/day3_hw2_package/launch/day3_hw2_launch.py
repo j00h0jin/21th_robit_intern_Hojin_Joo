@@ -32,6 +32,6 @@ def generate_launch_description():
         Node(
             package='day3_hw2_package',
             executable='day3_hw2_package',
-            name='day3_hw2_sub_node'
+            name='day3_hw2_gui'
         )
     ])
