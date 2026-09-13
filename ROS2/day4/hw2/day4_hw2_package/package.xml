@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>lifecycle</name>
+  <name>day4_hw2_package</name>
   <version>0.33.11</version>
   <description>Package containing demos for lifecycle implementation</description>
 

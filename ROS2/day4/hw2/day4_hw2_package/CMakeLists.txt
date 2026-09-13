@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(lifecycle)
+project(day4_hw2_package)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -19,44 +19,31 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
 ### demos
-add_executable(lifecycle_talker
-  src/lifecycle_talker.cpp)
-ament_target_dependencies(lifecycle_talker
+add_executable(publisher_node
+  src/publisher_node.cpp)
+ament_target_dependencies(publisher_node
   "lifecycle_msgs"
   "rclcpp"
   "rclcpp_lifecycle"
   "std_msgs"
 )
-add_executable(lifecycle_listener
-  src/lifecycle_listener.cpp)
-ament_target_dependencies(lifecycle_listener
+target_include_directories(publisher_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+add_executable(subscriber_node
+  src/subscriber_node.cpp)
+ament_target_dependencies(subscriber_node
   "lifecycle_msgs"
   "rclcpp"
   "std_msgs"
 )
-add_executable(lifecycle_service_client
-  src/lifecycle_service_client.cpp)
-ament_target_dependencies(lifecycle_service_client
-  "lifecycle_msgs"
-  "rclcpp"
-)
 
 install(TARGETS
-  lifecycle_talker
-  lifecycle_listener
-  lifecycle_service_client
+  publisher_node
+  subscriber_node
   DESTINATION lib/${PROJECT_NAME})
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-  find_package(ros_testing REQUIRED)
-  add_ros_test(
-    test/test_lifecycle.py
-    TIMEOUT 60
-  )
-endif()
 
 install(DIRECTORY
   launch
