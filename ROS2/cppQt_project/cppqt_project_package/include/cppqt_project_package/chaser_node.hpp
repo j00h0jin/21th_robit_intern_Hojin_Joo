@@ -35,7 +35,6 @@ class ChaserNode : public rclcpp::Node
     double player_x_;
     double player_y_;
 
-    double momentum_factor_;
     int last_dx_;
     int last_dy_;
     bool is_turning_delay_;
