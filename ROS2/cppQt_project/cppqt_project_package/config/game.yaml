@@ -1,0 +1,21 @@
+game_gui_node:
+  ros__parameters:
+    grid_size: 20
+    max_stamina: 120.0
+
+player_node:
+  ros__parameters:
+    grid_size: 20
+    player_start_x: 2
+    player_start_y: 2
+    max_stamina: 140.0
+    stamina_consumption_rate: 3.0
+    stamina_recovery_rate: 2.0
+
+chaser_node:
+  ros__parameters:
+    grid_size: 20
+    chaser_update_interval_ms: 170
+    chaser_momentum_factor: 1.5
+    chaser_start_x: 18
+    chaser_start_y: 18
