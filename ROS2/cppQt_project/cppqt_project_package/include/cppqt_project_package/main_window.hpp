@@ -3,14 +3,10 @@
 #include "cppqt_project_package/grid_map.hpp"
 #include "cppqt_project_package/grid_widget.hpp"
 #include "cppqt_project_package/ros_connector.hpp"
+
 #include <QElapsedTimer>
-#include <QHBoxLayout>
-#include <QLabel>
 #include <QMainWindow>
-#include <QProgressBar>
-#include <QPushButton>
 #include <QTimer>
-#include <QVBoxLayout>
 #include <QWidget>
 #include <thread>
 
