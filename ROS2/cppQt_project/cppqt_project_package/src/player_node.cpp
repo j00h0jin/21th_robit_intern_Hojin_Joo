@@ -67,7 +67,7 @@ void PlayerNode::resetCallback(const std::shared_ptr<std_srvs::srv::Empty::Reque
     geometry_msgs::msg::Point p_msg;
     p_msg.x = player_x_;
     p_msg.y = player_y_;
-    p_msg.z = stamina_exhausted_ ? 1.0 : 0.0; // 사용 안하는 z를 stamina 판별용으로 사용
+    p_msg.z = 0.0;
     player_pub_->publish(p_msg);
 }
 
@@ -121,7 +121,7 @@ void PlayerNode::commandCallback(const geometry_msgs::msg::Point::SharedPtr msg)
     geometry_msgs::msg::Point p_msg;
     p_msg.x = player_x_;
     p_msg.y = player_y_;
-    p_msg.z = stamina_exhausted_ ? 1.0 : 0.0;
+    p_msg.z = stamina_exhausted_ ? 1.0 : 0.0; // z를 stamina 판별용으로 사용
     player_pub_->publish(p_msg);
 }
 
