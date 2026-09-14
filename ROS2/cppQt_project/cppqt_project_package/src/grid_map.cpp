@@ -48,10 +48,8 @@ int GridMap::getCell(int x, int y) const
     return map_data_[y][x];
 }
 
-// 해당 좌표 도달 가능 여부
+// 해당 좌표 도달 가능 여부(bool)
 bool GridMap::isWalkable(int x, int y) const
 {
-    if (x < 0 || x >= width_ || y < 0 || y >= height_)
-        return false;
-    return map_data_[y][x] == 0;
+    return getCell(x, y) == 0;
 }
