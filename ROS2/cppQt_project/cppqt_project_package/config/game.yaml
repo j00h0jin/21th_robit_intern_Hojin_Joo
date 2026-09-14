@@ -16,6 +16,5 @@ chaser_node:
   ros__parameters:
     grid_size: 20
     chaser_update_interval_ms: 155
-    chaser_momentum_factor: 1.5
     chaser_start_x: 18
     chaser_start_y: 18

@@ -27,7 +27,6 @@ ChaserNode::ChaserNode() : Node("chaser_node"), grid_map_(20, 20), last_dx_(0), 
     grid_size_ = this->get_parameter("grid_size").as_int();
     chaser_start_x_ = this->get_parameter("chaser_start_x").as_int();
     chaser_start_y_ = this->get_parameter("chaser_start_y").as_int();
-    momentum_factor_ = this->get_parameter("chaser_momentum_factor").as_double();
 
     grid_map_ = GridMap(grid_size_, grid_size_);
     chaser_x_ = chaser_start_x_;
