@@ -42,6 +42,7 @@ ament_target_dependencies(player_node rclcpp geometry_msgs std_msgs std_srvs)
 add_executable(game_gui_node
     src/main.cpp
     src/main_window.cpp
+    src/ros_connector.cpp
     src/grid_map.cpp
     src/grid_widget.cpp
     src/input_handler.cpp

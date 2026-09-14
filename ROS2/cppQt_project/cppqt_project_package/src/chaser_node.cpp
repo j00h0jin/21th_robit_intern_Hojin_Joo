@@ -99,7 +99,7 @@ void ChaserNode::updateChaser()
 
     singleStep();
     // 거리가 멀다면 한번 더 움직이도록
-    if (distance >= 5)
+    if (distance >= 6)
         singleStep();
 
     geometry_msgs::msg::Point c_msg;
