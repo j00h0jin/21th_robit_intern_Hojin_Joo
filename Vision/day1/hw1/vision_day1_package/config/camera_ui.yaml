@@ -1,0 +1,3 @@
+camera_ui_node: # node name
+  ros__parameters: # ros__parameters 고정
+    test: 0
