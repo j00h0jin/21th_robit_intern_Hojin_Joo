@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
-find_package(Qt5 COMPONENTS Widgets Core Gui Network MultimediaWidgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core Gui Network Multimedia MultimediaWidgets REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -33,8 +33,7 @@ add_executable(camera_node
   include/${PROJECT_NAME}/camera_node/camera_node.hpp
 )
 target_include_directories(camera_node PRIVATE include)
-ament_target_dependencies(camera_node rclcpp std_msgs)
-target_link_libraries(camera_node ${OpenCV_LIBRARIES})
+ament_target_dependencies(camera_node rclcpp std_msgs OpenCV)
 
 # 2. ui_node Executable (Qt UI Node)
 add_executable(ui_node
@@ -43,14 +42,14 @@ add_executable(ui_node
   ui/mainwindow.ui
 )
 target_include_directories(ui_node PRIVATE include)
-ament_target_dependencies(ui_node rclcpp std_msgs Boost)
+ament_target_dependencies(ui_node rclcpp std_msgs Boost OpenCV)
 target_link_libraries(ui_node
   Qt5::Widgets
   Qt5::Core
   Qt5::Gui
   Qt5::Network
+  Qt5::Multimedia
   Qt5::MultimediaWidgets
-  ${OpenCV_LIBRARIES}
 )
 
 # ui 파일 경로 지정

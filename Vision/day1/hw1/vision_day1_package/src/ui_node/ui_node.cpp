@@ -1,7 +1,6 @@
 #include <QApplication>
 #include <iostream>
 
-// #include "../include/vision_day1_package/ui_node/ui_node.hpp"
 #include "../include/vision_day1_package/ui_node/ui_node.hpp"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
