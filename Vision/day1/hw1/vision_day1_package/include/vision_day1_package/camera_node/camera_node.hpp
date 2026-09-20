@@ -16,4 +16,9 @@ class CameraNode : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr timer;
 
     cv::VideoCapture capture;
+
+    int Hz;
+    std::string frame_id;
+    std::string encoding;
+    std::string topic_name;
 };

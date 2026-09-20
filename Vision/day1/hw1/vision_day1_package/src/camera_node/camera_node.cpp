@@ -6,9 +6,14 @@ CameraNode::CameraNode() : Node("camera_node")
 {
     capture.open(0);
 
-    image_pub = this->create_publisher<sensor_msgs::msg::Image>("Image", 10);
+    Hz = this->declare_parameter<int>("Hz", 16);
+    frame_id = this->declare_parameter<std::string>("frame_id", "camera_frame");
+    encoding = this->declare_parameter<std::string>("encoding", "bgr8");
+    topic_name = this->declare_parameter<std::string>("topic_name", "Image");
 
-    timer = this->create_wall_timer(std::chrono::milliseconds(16), std::bind(&CameraNode::timerCallback, this));
+    image_pub = this->create_publisher<sensor_msgs::msg::Image>(topic_name, 10);
+
+    timer = this->create_wall_timer(std::chrono::milliseconds(Hz), std::bind(&CameraNode::timerCallback, this));
 }
 
 CameraNode::~CameraNode()
@@ -24,9 +29,9 @@ void CameraNode::timerCallback()
 
     std_msgs::msg::Header header;
     header.stamp = this->now();
-    header.frame_id = "camera_frame";
+    header.frame_id = frame_id;
 
-    auto msg = cv_bridge::CvImage(header, "bgr8", frame).toImageMsg();
+    auto msg = cv_bridge::CvImage(header, encoding, frame).toImageMsg();
 
     image_pub->publish(*msg);
 }

@@ -4,8 +4,10 @@
 
 SubNode::SubNode() : QObject(nullptr), Node("ui_node")
 {
+    topic_name = this->declare_parameter<std::string>("topic_name", "Image");
+
     image_sub =
-        this->create_subscription<img>("Image", 10, std::bind(&SubNode::imageCallback, this, std::placeholders::_1));
+        this->create_subscription<img>(topic_name, 10, std::bind(&SubNode::imageCallback, this, std::placeholders::_1));
 }
 
 SubNode::~SubNode()
@@ -29,5 +31,11 @@ void SubNode::imageCallback(const img::SharedPtr msg)
     QImage qimg(rgb_image.data, rgb_image.cols, rgb_image.rows, static_cast<int>(rgb_image.step),
                 QImage::Format_RGB888);
 
-    emit imageSignal(qimg.copy());
+    {
+        // 만약 다른 곳에서 해당 이미지에 대한 접근 시도가 있을 때 mutex탈출까지 대기시킴
+        std::lock_guard<std::mutex> lock(img_mutex);
+        mutex_img = qimg.copy();
+    }
+
+    emit imageSignal(mutex_img);
 }
