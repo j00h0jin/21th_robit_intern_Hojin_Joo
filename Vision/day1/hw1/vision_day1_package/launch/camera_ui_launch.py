@@ -20,13 +20,7 @@ def generate_launch_description():
         ),
         Node(
             package='vision_day1_package',
-            executable='ui_node',
-            name='ui_node',
-            parameters=[camera_ui_yaml_file_path]
-        ),
-        Node(
-            package='vision_day1_package',
             executable='main_window',
-            name='main_window',
+            name='ui',
         )
     ])

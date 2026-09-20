@@ -1,19 +1,26 @@
 #pragma once
 
-#include "QIcon"
-#include "ui_mainwindow.h"
-#include <QMainWindow>
-#include <QVideoWidget>
+#include "cv_bridge/cv_bridge.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include <QImage>
+#include <QObject>
+#include <opencv2/opencv.hpp>
 
-class MainWindow : public QMainWindow
+using img = sensor_msgs::msg::Image;
+
+class SubNode : public QObject, public rclcpp::Node
 {
     Q_OBJECT
 
   public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    SubNode();
+    ~SubNode();
 
   private:
-    Ui::MainWindow *ui;
-    void closeEvent(QCloseEvent *event);
+    rclcpp::Subscription<img>::SharedPtr image_sub;
+    void imageCallback(const img::SharedPtr msg);
+
+  signals:
+    void imageSignal(const QImage &img);
 };

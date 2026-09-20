@@ -37,19 +37,13 @@ add_executable(camera_node
 target_include_directories(camera_node PRIVATE include)
 ament_target_dependencies(camera_node rclcpp std_msgs sensor_msgs OpenCV cv_bridge)
 
-# 2. ui_node 실행 파일 (독립된 ROS Node)
-add_executable(ui_node
-  src/ui_node/ui_node.cpp
-  include/${PROJECT_NAME}/ui_node/ui_node.hpp
-)
-target_include_directories(ui_node PRIVATE include)
-ament_target_dependencies(ui_node rclcpp std_msgs sensor_msgs OpenCV cv_bridge)
-
 # 3. main_window (Qt GUI 애플리케이션) 실행 파일
 add_executable(main_window
   src/main.cpp
   src/main_window.cpp
+  src/ui_node/ui_node.cpp 
   include/${PROJECT_NAME}/main_window.hpp
+  include/${PROJECT_NAME}/ui_node/ui_node.hpp
   ui/mainwindow.ui
 )
 target_include_directories(main_window PRIVATE include)
@@ -71,7 +65,6 @@ set_target_properties(main_window PROPERTIES
 # Install targets
 install(TARGETS
   camera_node
-  ui_node
   main_window
   DESTINATION lib/${PROJECT_NAME}
 )
