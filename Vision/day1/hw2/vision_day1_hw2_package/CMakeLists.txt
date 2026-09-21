@@ -11,6 +11,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 include_directories(include)
 
@@ -27,6 +28,7 @@ ament_target_dependencies(hw2_node
   std_msgs 
   sensor_msgs 
   cv_bridge
+  ament_index_cpp
 )
 
 target_link_libraries(hw2_node ${OpenCV_LIBRARIES})
@@ -34,6 +36,10 @@ target_link_libraries(hw2_node ${OpenCV_LIBRARIES})
 install(TARGETS
   hw2_node
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY resources
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(DIRECTORY
