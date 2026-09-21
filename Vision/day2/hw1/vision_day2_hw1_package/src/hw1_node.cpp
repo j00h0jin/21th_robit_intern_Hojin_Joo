@@ -8,11 +8,27 @@ Hw1Node::Hw1Node() : Node("hw1_node")
 {
     image_sub = this->create_subscription<img>("/camera1/camera/compressed_image", 10,
                                                std::bind(&Hw1Node::imageCallback, this, std::placeholders::_1));
+
+    info_sub = this->create_subscription<camInfo>("/camera1/compressed_info", 10,
+                                                  std::bind(&Hw1Node::cameraInfoCallback, this, std::placeholders::_1));
 }
 
 Hw1Node::~Hw1Node()
 {
     cv::destroyAllWindows();
+}
+
+// Z = f_x * W / w (W = 실제 크기, w = 화면 크기)
+double Hw1Node::DistanceComputationA(int width)
+{
+    if (fx == 0.0 || width <= 0)
+        return 0.0;
+
+    return correction * (fx * real_width) / (double)width;
+}
+
+void Hw1Node::DistanceComputationB()
+{
 }
 
 void Hw1Node::imageCallback(const img::SharedPtr msg)
@@ -48,13 +64,31 @@ void Hw1Node::imageCallback(const img::SharedPtr msg)
         if (area > 30) // 작은 점 인식 방지
         {
             cv::Rect box = cv::boundingRect(contour);
+
+            width = box.width;
+            // height = box.height;
+
+            double distanceA = DistanceComputationA(width);
+
             cv::rectangle(image, box, cv::Scalar(0, 255, 255), 5);
+
+            std::string text =
+                "W: " + std::to_string(width) + " | DistA: " + std::to_string(distanceA).substr(0, 4) + "m";
+
+            cv::putText(image, text, cv::Point(box.x, std::max(20, box.y - 10)), cv::FONT_HERSHEY_SIMPLEX, 0.6,
+                        cv::Scalar(0, 255, 255), 2);
+
             break;
         }
     }
 
     cv::imshow("image", image);
     cv::waitKey(1); // 동영상
+}
+
+void Hw1Node::cameraInfoCallback(const camInfo::SharedPtr msg)
+{
+    fx = msg->k[0];
 }
 
 int main(int argc, char **argv)
