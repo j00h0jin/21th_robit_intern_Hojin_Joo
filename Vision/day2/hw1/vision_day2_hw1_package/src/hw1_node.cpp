@@ -1,5 +1,6 @@
 #include "../include/vision_day2_hw1_package/hw1_node.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,6 +12,9 @@ Hw1Node::Hw1Node() : Node("hw1_node")
 
     info_sub = this->create_subscription<camInfo>("/camera1/compressed_info", 10,
                                                   std::bind(&Hw1Node::cameraInfoCallback, this, std::placeholders::_1));
+
+    tilt_sub = this->create_subscription<tiltStatus>(
+        "/camera1/pan_tilt_status", 10, std::bind(&Hw1Node::tiltStatusCallback, this, std::placeholders::_1));
 }
 
 Hw1Node::~Hw1Node()
@@ -19,16 +23,28 @@ Hw1Node::~Hw1Node()
 }
 
 // Z = f_x * W / w (W = 실제 크기, w = 화면 크기)
-double Hw1Node::DistanceComputationA(int width)
+double Hw1Node::DistanceComputationA()
 {
     if (fx == 0.0 || width <= 0)
         return 0.0;
 
-    return correction * (fx * real_width) / (double)width;
+    return correctionA * (fx * real_width) / (double)width;
 }
 
-void Hw1Node::DistanceComputationB()
+double Hw1Node::DistanceComputationB()
 {
+    if (fy == 0.0)
+        return 0.0;
+
+    // yn = (v - cy) / fy, alpha = arctan(yn)
+    double yn = (v - cy) / fy;
+    double alpha = std::atan(yn);
+
+    if (std::abs(std::tan(theta + alpha)) < 1e-6)
+        return 0.0; // 분모 != 0이므로 예외처리
+
+    // D = h / tan(theta + alpha)
+    return correctionB * h / std::tan(theta + alpha);
 }
 
 void Hw1Node::imageCallback(const img::SharedPtr msg)
@@ -66,14 +82,17 @@ void Hw1Node::imageCallback(const img::SharedPtr msg)
             cv::Rect box = cv::boundingRect(contour);
 
             width = box.width;
-            // height = box.height;
+            height = box.height;
 
-            double distanceA = DistanceComputationA(width);
+            v = (double)(box.y + box.height); // box.y: 좌측 상단 꼭짓점 y
+
+            double distanceA = DistanceComputationA();
+            double distanceB = DistanceComputationB();
 
             cv::rectangle(image, box, cv::Scalar(0, 255, 255), 5);
 
-            std::string text =
-                "W: " + std::to_string(width) + " | DistA: " + std::to_string(distanceA).substr(0, 4) + "m";
+            std::string text = "DistA: " + std::to_string(distanceA).substr(0, 4) + "m" +
+                               " | DistB: " + std::to_string(distanceB).substr(0, 4) + "m";
 
             cv::putText(image, text, cv::Point(box.x, std::max(20, box.y - 10)), cv::FONT_HERSHEY_SIMPLEX, 0.6,
                         cv::Scalar(0, 255, 255), 2);
@@ -89,6 +108,15 @@ void Hw1Node::imageCallback(const img::SharedPtr msg)
 void Hw1Node::cameraInfoCallback(const camInfo::SharedPtr msg)
 {
     fx = msg->k[0];
+    fy = msg->k[4];
+    cy = msg->k[5];
+}
+
+void Hw1Node::tiltStatusCallback(const tiltStatus::SharedPtr msg)
+{
+    double tilt_degree = msg->tilt / -1000.0;
+
+    theta = tilt_degree * M_PI / 180.0; // rad
 }
 
 int main(int argc, char **argv)

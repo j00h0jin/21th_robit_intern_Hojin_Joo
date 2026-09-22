@@ -12,6 +12,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(ament_index_cpp REQUIRED)
+find_package(insta360_usb_cam REQUIRED)
 
 include_directories(include)
 
@@ -29,6 +30,7 @@ ament_target_dependencies(hw1_node
   sensor_msgs 
   cv_bridge
   ament_index_cpp
+  insta360_usb_cam
 )
 
 target_link_libraries(hw1_node ${OpenCV_LIBRARIES})
