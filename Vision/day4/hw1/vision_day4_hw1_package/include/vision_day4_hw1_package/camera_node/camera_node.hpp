@@ -1,4 +1,4 @@
-#pragma once #pragma once
+#pragma once
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include <opencv2/opencv.hpp>
