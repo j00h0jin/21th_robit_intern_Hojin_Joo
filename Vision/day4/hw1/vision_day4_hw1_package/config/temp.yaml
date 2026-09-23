@@ -1,0 +1,4 @@
+temp_node: # node name
+  ros__parameters: # ros__parameters 고정
+    Hz: 15
+    topic_name: "testtest"
