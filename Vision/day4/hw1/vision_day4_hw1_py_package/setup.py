@@ -29,6 +29,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+           'inference_node = vision_day4_hw1_py_package.inference_node:main'
         ],
     },
 )

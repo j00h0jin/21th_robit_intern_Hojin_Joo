@@ -17,5 +17,11 @@ def generate_launch_description():
             executable='camera_node',
             name='camera_node',
             parameters=[hw1_yaml_file_path]
+        ),
+        Node(
+            package='vision_day4_hw1_py_package',
+            executable='inference_node',
+            name='inference_node',
+            parameters=[hw1_yaml_file_path]
         )
     ])
