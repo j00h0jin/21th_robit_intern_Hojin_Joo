@@ -5,11 +5,17 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    hw1_yaml_file_path = PathJoinSubstitution([
+        FindPackageShare('vision_day4_hw1_package'),
+        'config',
+        'hw1.yaml'
+    ])
 
     return LaunchDescription([
         Node(
-            package='',
-            executable='',
-            name='',
+            package='vision_day4_hw1_package',
+            executable='camera_node',
+            name='camera_node',
+            parameters=[hw1_yaml_file_path]
         )
     ])
