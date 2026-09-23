@@ -8,7 +8,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         Node(
-            package='vision_day4_hw1_package',
+            package='',
             executable='',
             name='',
         )
