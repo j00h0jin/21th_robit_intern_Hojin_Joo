@@ -1,4 +1,5 @@
 import os
+import time
 
 import cv2 as cv
 import rclpy
@@ -19,22 +20,87 @@ class InferenceNode(Node):
     def __init__(self):
         super().__init__('inference_node')
         
-        self.declare_parameter('topic_name', 'test') # Image
-        self.topic_name = self.get_parameter('topic_name').value
-        self.get_logger().info(f'topic_name: {self.topic_name}')
+        self.image = None
         
-        qos_profile = QoSProfile(depth=10)
+        self.declare_parameter('topic_name', 'test') # Image
+        self.declare_parameter('class_index', [0])
+        self.declare_parameter('class_name', ['test'])
+        self.declare_parameter('Hz', 1)
+        
+        self.topic_name = self.get_parameter('topic_name').value
+        index = self.get_parameter('class_index').value
+        name = self.get_parameter('class_name').value
+        self.class_dict = dict(zip(index, name)) # 딕셔너리로 변환 {idx: name}
+        Hz = self.get_parameter('Hz').value
+        
+        qos_profile = QoSProfile(depth=1)
         self.image_sub = self.create_subscription(Image, self.topic_name, self.image_sub_callback, qos_profile)
-        self.bridge = CvBridge()
+        
+        timer_sec = 1 / Hz
+        self.timer = self.create_timer(timer_sec, self.timer_callback)
         
     def image_sub_callback(self, msg):
+        self.start_time = time.time()
         
-        image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        self.image = CvBridge().imgmsg_to_cv2(msg, desired_encoding='bgr8')
         
-        cv.imshow('Image', image)
+    def timer_callback(self):
+        if self.image is None:
+            return
+        
+        w = self.image.shape[1]
+        h = self.image.shape[0]
+        r = min(640/w, 640/h) # 1.333..., 1
+        
+        resized_img = cv.resize(self.image, (int(w*r), int(h*r)))
+        
+        padding_w = int((640 - resized_img.shape[1]) / 2)
+        padding_h = int((640 - resized_img.shape[0]) / 2)
+        padded_img = cv.copyMakeBorder(resized_img, padding_h, padding_h, padding_w, padding_w,
+                        borderType=cv.BORDER_CONSTANT, # borderType: 패딩을 어떻게 채울지, constant: 지정된 색으로 채움
+                        value=(0, 0, 0)
+                        )
+        rgb_img = cv.cvtColor(padded_img, cv.COLOR_BGR2RGB) # rgb로
+        # 기존 h, w, c -> c, h, w, float32 바꾸기
+        tensor_img = torch.from_numpy(rgb_img).permute(2, 0, 1).to(dtype=torch.float32)
+        tensor_img = tensor_img / 255.0 # 0 ~ 1
+        tensor_img = tensor_img.unsqueeze(0) # n(배치) 추가 (n+chw)
+        
+        results = model.predict(source=tensor_img, conf= 0.4, iou=0.4)
+        
+        print_img = self.image.copy()
+        
+        for box in results[0].boxes:
+            idx = int(box.cls)
+            conf = float(box.conf)
+            
+            # if idx가 목록에 있으면
+            if idx in self.class_dict:
+                class_name = self.class_dict[idx]
+
+                coords = box.xyxy[0].tolist()
+                _x1, _y1, _x2, _y2 = map(int, coords)
+                
+                # x_original = (x_input − pad_left) / r
+                x1 = int((_x1 - padding_w) / r)
+                y1 = int((_y1 - padding_h) / r)
+                x2 = int((_x2 - padding_w) / r)
+                y2 = int((_y2 - padding_h) / r)
+                
+                # 640x640 박스 coordinate -> 원본 이미지에 맞게 좌표 변환 후 그리기
+                cv.rectangle(print_img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                
+                label_text = f"{class_name} | confidence: {conf:.2f}"
+                cv.putText(print_img, label_text, (x1, y1 - 10), 
+                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            #
+        #
+        
+        latency = (time.time() - self.start_time)
+        self.get_logger().info(f'\nlatency: {latency:.3f}sec')
+        
+        cv.imshow('yolo', print_img)
         cv.waitKey(1)
-        
-    
 
 
 def main(args=None):
