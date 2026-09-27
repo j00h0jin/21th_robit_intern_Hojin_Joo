@@ -98,11 +98,10 @@ class InferenceNode(Node):
             #
         #
         
-        latency = (time.time() - self.start_time)
-        self.get_logger().info(f'\nlatency: {latency:.3f}sec')
-        
         cv.imshow('yolo', copy_image)
         cv.waitKey(1)
+        latency = (time.time() - self.start_time)
+        self.get_logger().info(f'\nlatency: {latency:.3f}sec')
 
 
 def main(args=None):
