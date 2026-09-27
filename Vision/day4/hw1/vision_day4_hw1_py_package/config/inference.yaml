@@ -1,0 +1,17 @@
+inference_node: # node name
+  ros__parameters: # ros__parameters 고정
+    topic_name: "Image"
+
+    class_index:
+      - 0
+      - 56
+      - 64
+      - 67
+      - 73
+
+    class_name:
+      - "person"
+      - "chair"
+      - "mouse"
+      - "phone"
+      - "book"
