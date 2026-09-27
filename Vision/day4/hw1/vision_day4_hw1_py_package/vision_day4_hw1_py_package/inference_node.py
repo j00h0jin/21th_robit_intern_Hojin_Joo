@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 
 import cv2 as cv
@@ -21,6 +22,7 @@ class InferenceNode(Node):
         super().__init__('inference_node')
         
         self.image = None
+        self.lock = threading.Lock()
         
         self.declare_parameter('topic_name', 'test') # Image
         self.declare_parameter('class_index', [0])
@@ -41,18 +43,20 @@ class InferenceNode(Node):
         
     def image_sub_callback(self, msg):
         self.start_time = time.time()
-        
-        self.image = CvBridge().imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        with self.lock:
+            self.image = CvBridge().imgmsg_to_cv2(msg, desired_encoding='bgr8')
         
     def timer_callback(self):
-        if self.image is None:
-            return
+        with self.lock:
+            if self.image is None:
+                return
+            copy_image = self.image.copy()
         
-        w = self.image.shape[1]
-        h = self.image.shape[0]
+        w = copy_image.shape[1]
+        h = copy_image.shape[0]
         r = min(640/w, 640/h) # 1.333..., 1
         
-        resized_img = cv.resize(self.image, (int(w*r), int(h*r)))
+        resized_img = cv.resize(copy_image, (int(w*r), int(h*r)))
         
         padding_w = int((640 - resized_img.shape[1]) / 2)
         padding_h = int((640 - resized_img.shape[0]) / 2)
@@ -66,9 +70,7 @@ class InferenceNode(Node):
         tensor_img = tensor_img / 255.0 # 0 ~ 1
         tensor_img = tensor_img.unsqueeze(0) # n(배치) 추가 (n+chw)
         
-        results = model.predict(source=tensor_img, conf= 0.4, iou=0.4)
-        
-        print_img = self.image.copy()
+        results = model.predict(source=tensor_img, conf= 0.3, iou=0.4)
         
         for box in results[0].boxes:
             idx = int(box.cls)
@@ -88,10 +90,10 @@ class InferenceNode(Node):
                 y2 = int((_y2 - padding_h) / r)
                 
                 # 640x640 박스 coordinate -> 원본 이미지에 맞게 좌표 변환 후 그리기
-                cv.rectangle(print_img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                cv.rectangle(copy_image, (x1, y1), (x2, y2), (0, 255, 0), 3)
                 
                 label_text = f"{class_name} | confidence: {conf:.2f}"
-                cv.putText(print_img, label_text, (x1, y1 - 10), 
+                cv.putText(copy_image, label_text, (x1, max(20, y1 - 10)), 
                     cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             #
         #
@@ -99,7 +101,7 @@ class InferenceNode(Node):
         latency = (time.time() - self.start_time)
         self.get_logger().info(f'\nlatency: {latency:.3f}sec')
         
-        cv.imshow('yolo', print_img)
+        cv.imshow('yolo', copy_image)
         cv.waitKey(1)
 
 
