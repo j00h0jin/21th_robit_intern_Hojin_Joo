@@ -89,6 +89,7 @@ class InferenceNode(Node):
                 x2 = int((_x2 - padding_w) / r)
                 y2 = int((_y2 - padding_h) / r)
                 
+                print("test")
                 # 640x640 박스 coordinate -> 원본 이미지에 맞게 좌표 변환 후 그리기
                 cv.rectangle(copy_image, (x1, y1), (x2, y2), (0, 255, 0), 3)
                 
