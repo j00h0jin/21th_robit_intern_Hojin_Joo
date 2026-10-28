@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../data"))
+DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../data"))
 
 batch_size = 64
 learning_rate = 0.001
@@ -25,7 +25,8 @@ transform=transform)
 train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val, batch_size=batch_size)
 test_loader = DataLoader(test, batch_size=batch_size)
-device = torch.device("cpu")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"device: {device}")
 
 model = nn.Sequential(
 nn.Flatten(),
