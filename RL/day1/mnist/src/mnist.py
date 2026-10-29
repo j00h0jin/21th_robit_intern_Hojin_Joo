@@ -9,19 +9,25 @@ from torchvision import datasets, transforms
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../data"))
 
-batch_size = 64
+batch_size = 256
 learning_rate = 0.001
 epochs = 20
 
 torch.manual_seed(0)
-transform = transforms.Compose([
-    transforms.ToTensor(),                       # 1. 픽셀값 [0, 255] -> [0.0, 1.0] 텐서 변환
-    transforms.Normalize((0.1307,), (0.3081,))   # 2. (x - mean) / std 연산 적용
+# 학습 데이터용: 데이터 증강
+train_transform = transforms.Compose([
+    transforms.RandomAffine(degrees=10, translate=(0.05, 0.05), scale=(0.95, 1.05)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
-full = datasets.MNIST(DATA_DIR, train=True, download=True, transform=transform)
+test_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
+])
+full = datasets.MNIST(DATA_DIR, train=True, download=True, transform=train_transform)
 train, val = random_split(full, [55000, 5000], generator=torch.Generator().manual_seed(0))
 test = datasets.MNIST(DATA_DIR, train=False, download=True,
-transform=transform)
+transform=test_transform)
 train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val, batch_size=batch_size)
 test_loader = DataLoader(test, batch_size=batch_size)
@@ -59,10 +65,14 @@ def init_weights(m):
         nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
 
 model.apply(init_weights)
-criterion = nn.CrossEntropyLoss(label_smoothing=0.01)
+criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, threshold=0.005, patience=1, mode='min', factor=0.5) 
-
+scheduler = lr_scheduler.OneCycleLR(
+    optimizer,
+    max_lr=learning_rate,
+    steps_per_epoch=len(train_loader),
+    epochs=epochs
+)
 
 def main():
     for epoch in range(epochs):
@@ -77,14 +87,13 @@ def main():
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
+            scheduler.step()
             total_loss += loss.item() * images.size(0)
             
         train_loss = total_loss / len(train)
-        print(f"\nepoch: {epoch + 1}")
-        print(f"train_loss: {train_loss}, LR: {scheduler.optimizer.state_dict()['param_groups'][0]['lr']}")
         val_loss, val_acc = evaluate(val_loader)
-        print(f"Validation Loss: {val_loss}, Accuracy: {val_acc * 100:.2f}%")
-        scheduler.step(val_loss)
+        print(f"\nepoch: {epoch + 1}")
+        print(f"train_loss: {train_loss}, LR: {scheduler.optimizer.state_dict()['param_groups'][0]['lr']} | Validation Loss: {val_loss}, Accuracy: {val_acc * 100:.2f}%")
         
     test_loss, test_acc = evaluate(test_loader)
     print(f"\nTest Loss: {test_loss}, Accuracy: {test_acc * 100:.2f}%")
@@ -104,6 +113,7 @@ def evaluate(loader):
             count += len(labels)
             
     return loss_sum / count, correct / count
+
 
 import math
 
