@@ -10,8 +10,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "../data"))
 
 batch_size = 256
-learning_rate = 0.001
-epochs = 20
+learning_rate = 0.01
+epochs = 25
 
 torch.manual_seed(0)
 # 학습 데이터용: 데이터 증강
@@ -45,7 +45,7 @@ nn.Dropout(p=0.2),
 nn.Linear(1024, 512),
 nn.BatchNorm1d(512),
 nn.GELU(),
-nn.Dropout(p=0.10),
+nn.Dropout(p=0.1),
 
 nn.Linear(512, 256),
 nn.BatchNorm1d(256),
