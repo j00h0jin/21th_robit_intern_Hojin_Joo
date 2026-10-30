@@ -41,8 +41,6 @@ np.save("q_table.npy", Q)
 
 # 평가, epsilon = 0, Q 갱신 X
 Q = np.load("q_table.npy")
-print("returns")
-print(returns)
 print("Learned Q-table")
 print(Q)
 eval_env = gym.make("FrozenLake-v1", is_slippery=is_slippery)
@@ -64,10 +62,38 @@ env.close()
 #visualization
 import matplotlib.pyplot as plt
 
-smoothed_returns = np.convolve(returns, np.ones(100)/100, mode='valid')
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-plt.plot(smoothed_returns)
-plt.title("Learning Progress")
-plt.xlabel("Episodes")
-plt.ylabel("Win Rate (Average Reward)")
+smoothed_returns = np.convolve(returns, np.ones(100)/100, mode='valid')
+axes[0].plot(smoothed_returns, color='b', linewidth=2)
+axes[0].set_title("Learning Success Rate Curve (Moving Avg)")
+axes[0].set_xlabel("Episodes")
+axes[0].set_ylabel("Win Rate")
+axes[0].grid(True)
+
+q_max_grid = Q.max(axis=1).reshape(4, 4)
+cax = axes[1].matshow(q_max_grid, cmap='coolwarm')
+fig.colorbar(cax, ax=axes[1])
+axes[1].set_title("Q-Value Heatmap (Max Q per State)")
+
+for i in range(4):
+    for j in range(4):
+        axes[1].text(j, i, f"{q_max_grid[i, j]:.2f}", ha='center', va='center', color='black', fontweight='bold')
+        
+        action_arrows = {0: '←', 1: '↓', 2: '→', 3: '↑'}
+best_actions = np.argmax(Q, axis=1).reshape(4, 4)
+
+axes[2].matshow(np.zeros((4, 4)), cmap='Pastel1', alpha=0.3)
+axes[2].set_title("Optimal Policy Grid")
+axes[2].set_xticks(range(4))
+axes[2].set_yticks(range(4))
+axes[2].grid(True)
+
+for i in range(4):
+    for j in range(4):
+        action_idx = best_actions[i, j]
+        arrow = action_arrows[action_idx]
+        axes[2].text(j, i, arrow, ha='center', va='center', fontsize=24, fontweight='bold', color='darkblue')
+
+plt.tight_layout()
 plt.show()
