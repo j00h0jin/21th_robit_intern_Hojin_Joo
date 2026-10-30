@@ -3,14 +3,19 @@ import numpy as np
 
 episodes = 5000
 test_episodes = 200
-alpha = 0.1
-gamma = 0.95
 
-env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=False)
+alpha = 0.1 # 높을수록 기존값을 낮게 평가
+gamma = 0.90 # discount factor
+decay_rate = 0.999
+epsilon_min = 0.05
+is_slippery = False
+
+env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=is_slippery)
 rng = np.random.default_rng(0)
 Q = np.zeros((env.observation_space.n, env.action_space.n))
 returns = []
 
+# epsilon greedy
 def choose_action(state, epsilon, rng=rng):
     if rng.random() < epsilon:
         return int(rng.integers(4)) # Exploration
@@ -19,12 +24,12 @@ def choose_action(state, epsilon, rng=rng):
 
 for episode in range(episodes):
     state, _ = env.reset(seed=0 if episode == 0 else None)
-    epsilon = max(0.05, 0.999 ** episode) # decaying(episode가 커질 수록 작은 값을 가지도록, 최솟값 0.05)
+    epsilon = max(epsilon_min, decay_rate ** episode) # decaying(episode가 커질 수록 작은 값을 가지도록, 최솟값 0.05)
     total = 0
     while True:
         action = choose_action(state, epsilon) # 상, 하, 좌, 우 중 하나
         ns, r, terminated, truncated, _ = env.step(action) # next state, reward
-        target = r if terminated else r + gamma * Q[ns].max() # is_slippery가 false일 때 r
+        target = r if terminated else r + gamma * Q[ns].max() # terminated일 때 r
         Q[state, action] = Q[state, action] + alpha * (target - Q[state, action])
         # Q(s,a) ← Q(s,a) + α × TD error
         total += r
@@ -36,7 +41,11 @@ np.save("q_table.npy", Q)
 
 # 평가, epsilon = 0, Q 갱신 X
 Q = np.load("q_table.npy")
-eval_env = gym.make("FrozenLake-v1", is_slippery=False)
+print("returns")
+print(returns)
+print("Learned Q-table")
+print(Q)
+eval_env = gym.make("FrozenLake-v1", is_slippery=is_slippery)
 eval_rng = np.random.default_rng(1000)
 wins = 0
 for ep in range(test_episodes):
@@ -51,6 +60,8 @@ print(wins / test_episodes)
 eval_env.close()
 env.close()
 
+
+#visualization
 import matplotlib.pyplot as plt
 
 smoothed_returns = np.convolve(returns, np.ones(100)/100, mode='valid')
