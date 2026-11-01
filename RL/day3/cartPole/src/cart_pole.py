@@ -275,7 +275,7 @@ axs[1, 1].set_xlabel("Environment Step")
 axs[1, 1].set_ylabel("Epsilon (ε)")
 axs[1, 1].grid(True)
 
-plt.suptitle(f"DQN Training Curves (Seed: {seed}cc)", fontsize=16, fontweight='bold')
+plt.suptitle(f"DQN Training Curves (Seed: {seed})", fontsize=16, fontweight='bold')
 plt.tight_layout()
 plt.savefig("training_curves.png", dpi=160)
 plt.show()
