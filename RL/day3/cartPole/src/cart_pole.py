@@ -13,10 +13,10 @@ epsilon_min = 0.05
 discount_factor = 0.99
 warmup = 1000
 online_step = 4
-target_step = 500
-memory = 5000
+target_step = 1000
+memory_size = 20000
 
-lr = 0.001
+lr = 0.0001
 batch_size = 64
 
 rng = np.random.default_rng(0)
@@ -33,9 +33,10 @@ env.close()
 
 def make_net():
     return nn.Sequential(
-    nn.Linear(4, 64), nn.ReLU(),
-    nn.Linear(64, 64), nn.ReLU(),
-    nn.Linear(64, 2)
+    nn.Linear(4, 32), nn.ReLU(),
+    nn.Linear(32, 32), nn.ReLU(),
+    nn.Linear(32, 32), nn.ReLU(),
+    nn.Linear(32, 2)
     )
 
 online = make_net().to(device)
@@ -63,7 +64,7 @@ def select_action(state, epsilon, model=online, rng=rng, device=device):
             best = np.flatnonzero(q_np == q_np.max())
             return int(rng.choice(best))
 
-memory = deque(maxlen=memory)
+memory = deque(maxlen=memory_size)
 memory.append((state.copy(), action, reward, next_state.copy(), terminated))
 
 # before training (once)
@@ -99,6 +100,24 @@ for step in range(1, steps + 1):
     epsilon = max(epsilon_min, 1 - (1 - epsilon_min) * (step - 1) / decay_step) # 1.0에서 0.05까지 15,000 step 동안 감소
     action = select_action(state, epsilon)
     ns, r, term, trunc, _ = env.step(action)
+    
+    cart_pos = ns[0]
+    cart_vel = ns[1]
+    pole_angle = ns[2]
+    pole_angular_vel = ns[3]
+    
+    r = 1.0
+    
+    if abs(ns[2]) > 0.04:
+        r += -1
+    if abs(ns[0]) > 1.6:
+        r += -1
+
+    if term:
+        r += -20.0
+    elif trunc:
+        r += 100.0
+        
     memory.append((state.copy(), action, r, ns.copy(), term))
     current_episode_reward += r  # 스텝마다 보상 누적
     
@@ -114,13 +133,14 @@ for step in range(1, steps + 1):
         episode_count += 1
         episode_rewards.append(current_episode_reward)
         print(f"step: {step} | episode: {episode_count}, reward: {current_episode_reward} | epsilon: {epsilon}")
+        print(f"{ns[0]:.2f}, {ns[1]:.2f}, {ns[2]:.2f}, {ns[3]:.2f}")
         state, _ = env.reset()
         current_episode_reward = 0
         
 torch.save(online.state_dict(), "dqn.pt")
 
 # eval, epsilon = 0
-env_eval = gym.make("CartPole-v1", render_mode="human")
+env_eval = gym.make("CartPole-v1") # , render_mode="human"
 
 model = make_net()
 model.load_state_dict(torch.load("dqn.pt", weights_only=True))
