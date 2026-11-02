@@ -4,6 +4,8 @@ import sys
 import time
 import warnings
 
+from matplotlib.dates import epoch2num
+
 warnings.filterwarnings("ignore")
 
 import gymnasium as gym
@@ -12,6 +14,17 @@ import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+
+lr = 0.0003
+ctrl_cost_weight = 1.5
+forward_reward_weight = 0.6
+policy_kwargs = dict(net_arch=dict(pi=[256, 256], vf=[256, 256])) # actor, critic
+
+epoch = 10
+batch_size = 64
+
+steps = 100000
+policy = "MlpPolicy"
 
 
 # ==========================================================
@@ -98,7 +111,7 @@ class RealtimePlotCallback(BaseCallback):
         if self.fig is not None and plt.fignum_exists(self.fig.number):
             plt.ioff()
             plt.show(block=False)
-
+# 시각화
 
 # ==========================================================
 # 2. 주기적 3D 렌더링 시연 콜백
@@ -116,7 +129,7 @@ class PeriodicVisualEvalCallback(BaseCallback):
             if self.verbose > 0:
                 print(f"\n[시각화 평가] {self.n_calls} 스텝 도달! 현재 정책의 보행 모습을 3D 윈도우로 시연합니다...")
 
-            eval_env = gym.make("Humanoid-v5", render_mode="human")
+            eval_env = gym.make("Humanoid-v5", render_mode="human", ctrl_cost_weight=ctrl_cost_weight, forward_reward_weight=forward_reward_weight)
             for ep in range(self.n_eval_episodes):
                 obs, _ = eval_env.reset()
                 done = False
@@ -136,6 +149,7 @@ class PeriodicVisualEvalCallback(BaseCallback):
             eval_env.close()
 
         return True
+# eval_freq 마다 시각화
 
 
 # ==========================================================
@@ -143,12 +157,155 @@ class PeriodicVisualEvalCallback(BaseCallback):
 # ==========================================================
 def make_humanoid_env(render_mode=None):
     """Humanoid-v5 환경을 생성합니다."""
-    return gym.make("Humanoid-v5", render_mode=render_mode)
+    return gym.make("Humanoid-v5", render_mode=render_mode, ctrl_cost_weight=ctrl_cost_weight, forward_reward_weight=forward_reward_weight)
+# 시각화 X
 
 
 # ==========================================================
 # 4. 각 모드별 실행 로직
 # ==========================================================
+
+def run_live_training(total_timesteps=steps, model_save_path="humanoid_ppo_model.zip"):
+    """실시간 3D 렌더링 윈도우와 그래프를 보면서 직접 학습 진행"""
+    print("\n" + "=" * 60)
+    print(" [모드 1] 실시간 3D 시각화 + 강화학습 (Live Visual Training)")
+    print(" 3D 화면으로 로봇이 넘어지고 일어서며 학습하는 모습과 실시간 그래프를 관찰합니다.")
+    print(f" 목표 학습 타임스텝: {total_timesteps:,} steps")
+    print("=" * 60)
+
+    # 3D 렌더링 환경 생성
+    env = make_humanoid_env(render_mode="human")
+
+    # PPO 에이전트 생성
+    model = PPO(
+        policy=policy,
+        env=env,
+        learning_rate=lr,
+        n_steps=2048,
+        batch_size=batch_size,
+        n_epochs=epoch,
+        gamma=0.99,
+        gae_lambda=0.95,
+        clip_range=0.2,
+        ent_coef=0.0,
+        verbose=1,
+        policy_kwargs=policy_kwargs,
+    )
+
+    plot_cb = RealtimePlotCallback(plot_freq_episodes=1)
+
+    try:
+        model.learn(total_timesteps=total_timesteps, callback=[plot_cb])
+        print(f"\n학습 완료! 모델을 저장합니다 -> {model_save_path}")
+        model.save(model_save_path)
+    except KeyboardInterrupt:
+        print("\n사용자에 의해 학습이 중단되었습니다. 현재까지의 모델을 저장합니다.")
+        model.save(model_save_path)
+    finally:
+        env.close()
+
+
+def run_fast_training(total_timesteps=steps, eval_freq=10000, model_save_path="humanoid_ppo_model.zip"):
+    """고속 백그라운드 학습 + 주기적 3D 평가 시연 + 실시간 통계 그래프"""
+    print("\n" + "=" * 60)
+    print(" [모드 2] 고속 학습 + 주기적 3D 시연 (Fast Training + Periodic Eval)")
+    print(f" 빠른 속도로 학습하면서 매 {eval_freq:,} 스텝마다 3D 창으로 학습 성과를 시연합니다.")
+    print(f" 목표 학습 타임스텝: {total_timesteps:,} steps")
+    print("=" * 60)
+
+    # 고속 학습용 환경 (render_mode=None)
+    env = make_humanoid_env(render_mode=None)
+
+    model = PPO(
+        policy=policy,
+        env=env,
+        learning_rate=lr,
+        n_steps=2048,
+        batch_size=batch_size,
+        n_epochs=epoch,
+        gamma=0.99,
+        gae_lambda=0.95,
+        clip_range=0.2,
+        verbose=1,
+        policy_kwargs=policy_kwargs,
+    )
+
+    plot_cb = RealtimePlotCallback(plot_freq_episodes=2)
+    visual_cb = PeriodicVisualEvalCallback(eval_freq=eval_freq, n_eval_episodes=1)
+
+    try:
+        model.learn(total_timesteps=total_timesteps, callback=[plot_cb, visual_cb])
+        print(f"\n학습 완료! 모델을 저장합니다 -> {model_save_path}")
+        model.save(model_save_path)
+    except KeyboardInterrupt:
+        print("\n사용자에 의해 학습이 중단되었습니다. 현재까지의 모델을 저장합니다.")
+        model.save(model_save_path)
+    finally:
+        env.close()
+
+
+def run_watch_trained_model(model_save_path="humanoid_ppo_model.zip", n_episodes=20):
+    """저장된 모델을 불러와 20회 평가를 진행하고 주요 지표를 추출합니다."""
+    print("\n" + "=" * 60)
+    print(" [모드 3] 학습된 모델 정량 평가 및 시연")
+    print(f" 모델 경로: {model_save_path}")
+    print("=" * 60)
+
+    if not os.path.exists(model_save_path):
+        print(f"오류: '{model_save_path}' 파일이 존재하지 않습니다.")
+        return
+
+    env = gym.make("Humanoid-v5", render_mode="human",ctrl_cost_weight=ctrl_cost_weight, forward_reward_weight=forward_reward_weight)
+    model = PPO.load(model_save_path, env=env)
+
+    eval_forward_velocities = []
+    eval_ctrl_costs = []
+    eval_survival_steps = []
+
+    print(f"총 {n_episodes}개 에피소드 동안 평가를 진행합니다.\n")
+
+    for ep in range(n_episodes):
+        obs, info = env.reset()
+        done = False
+        ep_velocities = []
+        ep_actions = []
+        step_count = 0
+
+        while not done:
+            action, _states = model.predict(obs, deterministic=True) # 평가 시 결정론적 행동[cite: 15]
+            obs, reward, terminated, truncated, info = env.step(action)
+
+            # 지표 1: 전진 속도
+            if 'x_velocity' in info:
+                ep_velocities.append(info['x_velocity'])
+            
+            # 지표 2: 제어 입력 크기[cite: 15]
+            ctrl_cost = np.mean(np.square(action))
+            ep_actions.append(ctrl_cost)
+
+            step_count += 1
+            done = terminated or truncated
+            time.sleep(0.015) 
+
+        # 에피소드별 평균 기록
+        if ep_velocities:
+            eval_forward_velocities.append(np.mean(ep_velocities))
+        eval_ctrl_costs.append(np.mean(ep_actions))
+        eval_survival_steps.append(step_count)
+
+        end_reason = "넘어짐" if terminated else "시간초과"
+        print(f" [에피소드 {ep + 1}/{n_episodes}] 유지 스텝: {step_count} ({end_reason})")
+
+    env.close()
+
+    # 최종 평균 산출[cite: 15, 16]
+    print("\n=== 최종 20회 평가 결과 평균 ===")
+    print(f"평균 에피소드 유지 시간(스텝): {np.mean(eval_survival_steps):.1f}")
+    print(f"평균 전진 속도: {np.mean(eval_forward_velocities):.4f} ± {np.std(eval_forward_velocities):.4f}")
+    print(f"평균 제어 입력: {np.mean(eval_ctrl_costs):.4f} ± {np.std(eval_ctrl_costs):.4f}")
+    print("===============================\n")
+    
+    
 def run_random_demo(n_steps=500):
     """학습 전 기본 무작위 행동 시각화 (초기 상태 관찰)"""
     print("\n" + "=" * 60)
@@ -156,7 +313,7 @@ def run_random_demo(n_steps=500):
     print(" 로봇이 학습되지 않은 상태에서 어떻게 넘어지는지 관찰합니다.")
     print("=" * 60)
 
-    env = gym.make("Humanoid-v5", render_mode="human")
+    env = gym.make("Humanoid-v5", render_mode="human",ctrl_cost_weight=ctrl_cost_weight, forward_reward_weight=forward_reward_weight)
     obs, info = env.reset(seed=42)
 
     total_reward = 0.0
@@ -178,121 +335,6 @@ def run_random_demo(n_steps=500):
     env.close()
     print("무작위 행동 시연이 완료되었습니다.\n")
 
-
-def run_live_training(total_timesteps=50000, model_save_path="humanoid_ppo_model.zip"):
-    """실시간 3D 렌더링 윈도우와 그래프를 보면서 직접 학습 진행"""
-    print("\n" + "=" * 60)
-    print(" [모드 1] 실시간 3D 시각화 + 강화학습 (Live Visual Training)")
-    print(" 3D 화면으로 로봇이 넘어지고 일어서며 학습하는 모습과 실시간 그래프를 관찰합니다.")
-    print(f" 목표 학습 타임스텝: {total_timesteps:,} steps")
-    print("=" * 60)
-
-    # 3D 렌더링 환경 생성
-    env = make_humanoid_env(render_mode="human")
-
-    # PPO 에이전트 생성
-    model = PPO(
-        policy="MlpPolicy",
-        env=env,
-        learning_rate=3e-4,
-        n_steps=1024,
-        batch_size=64,
-        n_epochs=10,
-        gamma=0.99,
-        gae_lambda=0.95,
-        clip_range=0.2,
-        ent_coef=0.0,
-        verbose=1,
-    )
-
-    plot_cb = RealtimePlotCallback(plot_freq_episodes=1)
-
-    try:
-        model.learn(total_timesteps=total_timesteps, callback=[plot_cb])
-        print(f"\n학습 완료! 모델을 저장합니다 -> {model_save_path}")
-        model.save(model_save_path)
-    except KeyboardInterrupt:
-        print("\n사용자에 의해 학습이 중단되었습니다. 현재까지의 모델을 저장합니다.")
-        model.save(model_save_path)
-    finally:
-        env.close()
-
-
-def run_fast_training(total_timesteps=100000, eval_freq=10000, model_save_path="humanoid_ppo_model.zip"):
-    """고속 백그라운드 학습 + 주기적 3D 평가 시연 + 실시간 통계 그래프"""
-    print("\n" + "=" * 60)
-    print(" [모드 2] 고속 학습 + 주기적 3D 시연 (Fast Training + Periodic Eval)")
-    print(f" 빠른 속도로 학습하면서 매 {eval_freq:,} 스텝마다 3D 창으로 학습 성과를 시연합니다.")
-    print(f" 목표 학습 타임스텝: {total_timesteps:,} steps")
-    print("=" * 60)
-
-    # 고속 학습용 환경 (render_mode=None)
-    env = make_humanoid_env(render_mode=None)
-
-    model = PPO(
-        policy="MlpPolicy",
-        env=env,
-        learning_rate=3e-4,
-        n_steps=2048,
-        batch_size=64,
-        n_epochs=10,
-        gamma=0.99,
-        gae_lambda=0.95,
-        clip_range=0.2,
-        verbose=1,
-    )
-
-    plot_cb = RealtimePlotCallback(plot_freq_episodes=2)
-    visual_cb = PeriodicVisualEvalCallback(eval_freq=eval_freq, n_eval_episodes=1)
-
-    try:
-        model.learn(total_timesteps=total_timesteps, callback=[plot_cb, visual_cb])
-        print(f"\n학습 완료! 모델을 저장합니다 -> {model_save_path}")
-        model.save(model_save_path)
-    except KeyboardInterrupt:
-        print("\n사용자에 의해 학습이 중단되었습니다. 현재까지의 모델을 저장합니다.")
-        model.save(model_save_path)
-    finally:
-        env.close()
-
-
-def run_watch_trained_model(model_save_path="humanoid_ppo_model.zip", n_episodes=5):
-    """저장된 모델을 불러와 3D 화면으로 휴머노이드 보행 모션 감상"""
-    print("\n" + "=" * 60)
-    print(" [모드 3] 학습된 모델 3D 시연 (Watch Trained Model)")
-    print(f" 모델 경로: {model_save_path}")
-    print("=" * 60)
-
-    if not os.path.exists(model_save_path):
-        print(f"오류: '{model_save_path}' 파일이 존재하지 않습니다.")
-        print("먼저 [모드 1] 또는 [모드 2]로 학습을 진행하여 모델을 생성해주세요.")
-        return
-
-    env = gym.make("Humanoid-v5", render_mode="human")
-    model = PPO.load(model_save_path, env=env)
-
-    print(f"총 {n_episodes}개 에피소드 동안 학습된 모델의 보행을 시연합니다.\n")
-
-    for ep in range(n_episodes):
-        obs, info = env.reset()
-        done = False
-        total_reward = 0.0
-        step_count = 0
-
-        while not done:
-            action, _states = model.predict(obs, deterministic=True)
-            obs, reward, terminated, truncated, info = env.step(action)
-            total_reward += reward
-            step_count += 1
-            done = terminated or truncated
-            time.sleep(0.015)  # 60fps에 맞춘 부드러운 시각화
-
-        print(f"  [에피소드 {ep + 1}/{n_episodes}] 완료 - 생존 스텝: {step_count}, 총 보상: {total_reward:.2f}")
-
-    env.close()
-    print("\n시연이 완료되었습니다.")
-
-
 # ==========================================================
 # 5. 메인 진입점 및 대화형 메뉴
 # ==========================================================
@@ -305,7 +347,7 @@ def main():
         default=None,
         help="실행 모드: train_live (실시간 시각화 학습), train_fast (고속 학습+주기적 시연), play (저장된 모델 시연), random (무작위 동작)",
     )
-    parser.add_argument("--timesteps", type=int, default=50000, help="총 학습 스텝 수 (기본: 50,000)")
+    parser.add_argument("--timesteps", type=int, default=steps, help="총 학습 스텝 수 (기본: 50,000)")
     parser.add_argument("--eval_freq", type=int, default=10000, help="고속 학습 시 3D 시각화 평가 주기 스텝 (기본: 10,000)")
     parser.add_argument("--model_path", type=str, default="humanoid_ppo_model.zip", help="모델 저장/로드 경로")
     args = parser.parse_args()
@@ -319,7 +361,7 @@ def main():
         elif args.mode == "play":
             run_watch_trained_model(model_save_path=args.model_path)
         elif args.mode == "random":
-            run_random_demo(n_steps=args.timesteps if args.timesteps != 50000 else 500)
+            run_random_demo(n_steps=args.timesteps if args.timesteps != steps else 500)
         return
 
     # 인자 없이 실행했을 때는 메뉴가 계속 유지되어 번호를 연속해서 선택할 수 있도록 구성
